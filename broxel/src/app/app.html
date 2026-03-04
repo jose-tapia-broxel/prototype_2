@@ -1,0 +1,59 @@
+<div class="min-h-screen bg-slate-50 font-sans text-slate-900 flex flex-col">
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-10">
+    <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-6">
+        <a routerLink="/" class="flex items-center gap-3 hover:opacity-80 transition-opacity">
+          <div class="w-10 h-10 flex items-center justify-center">
+            <svg viewBox="0 0 100 40" class="w-24 h-10" xmlns="http://www.w3.org/2000/svg">
+              <!-- Broxel Infinity Logo -->
+              <path d="M25 10C15 10 5 18 5 25C5 32 13 38 20 38C27 38 35 32 40 25C45 18 53 10 60 10C67 10 75 16 75 23C75 30 67 38 60 38C53 38 45 30 40 23C35 16 27 10 20 10" 
+                    fill="none" stroke="#00C4E9" stroke-width="8" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <span class="font-bold text-2xl tracking-tight text-[#003366]">BROXEL</span>
+        </a>
+        
+        <nav class="hidden md:flex items-center gap-1 ml-4">
+          <a routerLink="/" routerLinkActive="bg-slate-100 text-indigo-600" [routerLinkActiveOptions]="{exact: true}" class="px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-indigo-600 transition-colors">
+            Dashboard
+          </a>
+          <a routerLink="/builder/new" routerLinkActive="bg-slate-100 text-indigo-600" class="px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-indigo-600 transition-colors">
+            New Workflow
+          </a>
+        </nav>
+      </div>
+      <div class="flex items-center gap-4">
+        @if (isRunningWorkload()) {
+          <button (click)="openInNewTab()" class="hidden md:flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-indigo-600 transition-colors bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded-lg" title="Open in new tab">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+            </svg>
+            Open in New Tab
+          </button>
+        }
+      </div>
+    </div>
+  </header>
+  <main class="flex-1 flex flex-col">
+    <router-outlet></router-outlet>
+  </main>
+
+  <footer class="bg-white border-t border-slate-200 mt-auto">
+    <div class="max-w-7xl mx-auto px-6 py-8">
+      <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+        <div class="flex items-center gap-2 text-slate-500 text-sm">
+          <svg viewBox="0 0 100 40" class="w-12 h-5" xmlns="http://www.w3.org/2000/svg">
+            <path d="M25 10C15 10 5 18 5 25C5 32 13 38 20 38C27 38 35 32 40 25C45 18 53 10 60 10C67 10 75 16 75 23C75 30 67 38 60 38C53 38 45 30 40 23C35 16 27 10 20 10" 
+                  fill="none" stroke="#00C4E9" stroke-width="8" stroke-linecap="round"/>
+          </svg>
+          <span>&copy; {{ currentYear }} Broxel Workflow Builder.</span>
+        </div>
+        <div class="flex items-center gap-6 text-sm font-medium text-slate-500">
+          <a href="#" class="hover:text-indigo-600 transition-colors">Documentation</a>
+          <a href="#" class="hover:text-indigo-600 transition-colors">Support</a>
+          <a href="#" class="hover:text-indigo-600 transition-colors">Terms</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+</div>

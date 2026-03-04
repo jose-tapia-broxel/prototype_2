@@ -1,0 +1,581 @@
+<div class="flex-1 bg-slate-50 flex flex-col" [class.p-4]="!isFullscreen()" [class.md:p-8]="!isFullscreen()">
+  @if (workflow()) {
+    @if (!isFullscreen()) {
+      <!-- Device Selector Header -->
+      <div class="max-w-5xl mx-auto mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div class="flex items-center gap-4">
+          <a routerLink="/" class="text-slate-500 hover:text-slate-800 transition-colors bg-white p-2 rounded-xl border border-slate-200 shadow-sm">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+            </svg>
+          </a>
+          <div>
+            <h1 class="text-xl font-bold text-slate-900">{{ getLocalized(workflow()?.name) }}</h1>
+            <p class="text-xs text-slate-500">{{ getLocalized(workflow()?.description) }}</p>
+          </div>
+        </div>
+
+        <div class="flex items-center bg-white p-1 rounded-xl border border-slate-200 shadow-sm overflow-x-auto max-w-full scrollbar-hide">
+          @for (device of devices; track device.id) {
+            <button (click)="selectedDevice.set(device.id)"
+                    class="flex items-center gap-2 px-3 py-2 rounded-lg text-[10px] font-bold transition-all shrink-0"
+                    [class.bg-indigo-600]="selectedDevice() === device.id"
+                    [class.text-white]="selectedDevice() === device.id"
+                    [class.text-slate-500]="selectedDevice() !== device.id"
+                    [class.hover:bg-slate-50]="selectedDevice() !== device.id">
+              <span [innerHTML]="device.icon"></span>
+              <span class="hidden lg:inline">{{ device.name }}</span>
+            </button>
+          }
+        </div>
+
+        <div class="flex items-center gap-2">
+          <div class="flex items-center bg-white p-1 rounded-xl border border-slate-200 shadow-sm">
+            <button (click)="lang.setLanguage('en')" 
+                    [class.bg-indigo-600]="lang.currentLang() === 'en'"
+                    [class.text-white]="lang.currentLang() === 'en'"
+                    [class.text-slate-500]="lang.currentLang() !== 'en'"
+                    class="px-3 py-1.5 rounded-lg text-[10px] font-bold transition-all">EN</button>
+            <button (click)="lang.setLanguage('es')" 
+                    [class.bg-indigo-600]="lang.currentLang() === 'es'"
+                    [class.text-white]="lang.currentLang() === 'es'"
+                    [class.text-slate-500]="lang.currentLang() !== 'es'"
+                    class="px-3 py-1.5 rounded-lg text-[10px] font-bold transition-all">ES</button>
+          </div>
+          <button (click)="isLandscape.set(!isLandscape())" 
+                  class="p-2 rounded-xl border border-slate-200 shadow-sm transition-all"
+                  [class.bg-indigo-600]="isLandscape()"
+                  [class.text-white]="isLandscape()"
+                  [class.bg-white]="!isLandscape()"
+                  [class.text-slate-500]="!isLandscape()"
+                  title="Toggle Landscape">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5" [class.rotate-90]="isLandscape()">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 1.5H8.25A2.25 2.25 0 006 3.75v16.5a2.25 2.25 0 002.25 2.25h7.5A2.25 2.25 0 0018 20.25V3.75a2.25 2.25 0 00-2.25-2.25H13.5m-3 0V3h3V1.5m-3 0h3m-3 18.75h3" />
+            </svg>
+          </button>
+          <a [href]="'/run/' + workflow()?.id + '?fullscreen=true'" target="_blank" 
+             class="p-2 rounded-xl border border-slate-200 shadow-sm transition-all bg-white hover:bg-slate-50 text-slate-500 hover:text-indigo-600" 
+             title="Open Fullscreen">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15" />
+            </svg>
+          </a>
+        </div>
+      </div>
+
+      <!-- Progress Bar (Global) -->
+      <div class="max-w-5xl mx-auto mb-8">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-xs font-bold text-slate-400 uppercase tracking-widest">Step {{ currentStepIndex() + 1 }} of {{ workflow()?.steps?.length }}</span>
+          <span class="text-xs font-bold text-indigo-600 uppercase tracking-widest">{{ getLocalized(currentStep()?.title) }}</span>
+        </div>
+        <div class="w-full bg-slate-200 rounded-full h-1.5 overflow-hidden">
+          <div class="bg-indigo-600 h-full rounded-full transition-all duration-500 ease-out" [style.width]="progressPercentage() + '%'"></div>
+        </div>
+      </div>
+    }
+
+    <!-- Device Viewport Container -->
+    <div class="flex-1 flex items-center justify-center overflow-hidden w-full" [class.p-4]="!isFullscreen()" [class.md:p-8]="!isFullscreen()">
+      @if (selectedDevice() === 'desktop' || isFullscreen()) {
+        <!-- Full Desktop Preview -->
+        <div class="w-full h-full bg-slate-50 overflow-y-auto" [class.shadow-sm]="!isFullscreen()" [class.border]="!isFullscreen()" [class.border-slate-200]="!isFullscreen()" [class.rounded-2xl]="!isFullscreen()">
+          <div class="max-w-4xl mx-auto min-h-full flex flex-col bg-white shadow-sm border-x border-slate-200">
+            <!-- Mock App Navbar -->
+            <div class="bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between sticky top-0 z-10 shrink-0 shadow-sm">
+              <div class="flex items-center gap-3">
+                <svg viewBox="0 0 100 40" class="w-12 h-6" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M25 10C15 10 5 18 5 25C5 32 13 38 20 38C27 38 35 32 40 25C45 18 53 10 60 10C67 10 75 16 75 23C75 30 67 38 60 38C53 38 45 30 40 23C35 16 27 10 20 10" fill="none" stroke="#00C4E9" stroke-width="8" stroke-linecap="round"/>
+                </svg>
+                <span class="font-bold text-lg tracking-tight text-[#003366]">BROXEL</span>
+              </div>
+              <span class="font-semibold text-slate-800 text-lg truncate">{{ getLocalized(currentStep()?.title) }}</span>
+              <svg class="w-6 h-6 text-slate-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" /></svg>
+            </div>
+            
+            <form [formGroup]="stepForm" (ngSubmit)="nextStep()" class="flex-1 flex flex-col">
+              <div class="flex-1 relative p-10 min-h-[500px]">
+                @if (currentStep()?.htmlCode) {
+                  <div class="custom-html-container" [innerHTML]="getSanitizedHtml(currentStep()!.htmlCode!)"></div>
+                  <style [innerHTML]="getSanitizedCss(currentStep()!.cssCode || '')"></style>
+                } @else {
+                  @for (field of (currentStep()?.layout || currentStep()?.fields); track field.id; let i = $index) {
+                  <div [style.position]="field.position ? 'absolute' : 'relative'"
+                       [style.left.%]="field.position?.x || 0"
+                       [style.top.px]="field.position?.y || (i * 100)"
+                       [style.width.%]="field.dimensions?.width || 100"
+                       [style.height.px]="field.dimensions?.height || 90"
+                       class="mb-8">
+                    
+                    @if (isCustomField(field.type)) {
+                      <div class="custom-field-wrapper" 
+                           [innerHTML]="getCustomFieldHtml(field)"></div>
+                      <style [innerHTML]="getCustomFieldCss(field.type)"></style>
+                    } @else {
+                      @if (field.type !== 'message' && field.type !== 'container' && field.type !== 'ssoLogin' && field.type !== 'button' && field.type !== 'effect' && field.label !== 'Static Text') {
+                      <label [for]="field.id" class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 truncate">
+                        {{ getLocalized(field.label) }}
+                        @if (field.required) { <span class="text-red-500">*</span> }
+                      </label>
+                    }
+
+                    @switch (field.type) {
+                      @case ('shortText') {
+                        <input type="text" [id]="field.id" [formControlName]="field.id" class="w-full px-5 py-4 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all bg-slate-50/30" [placeholder]="getLocalized(field.placeholder) || ''">
+                      }
+                      @case ('text') {
+                        <div class="text-slate-700 py-2 text-base leading-relaxed">
+                          {{ field.defaultValue || 'Static text content goes here...' }}
+                        </div>
+                      }
+                      @case ('number') {
+                        <input type="number" [id]="field.id" [formControlName]="field.id" class="w-full px-5 py-4 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all bg-slate-50/30" [placeholder]="getLocalized(field.placeholder) || ''">
+                      }
+                      @case ('email') {
+                        <input type="email" [id]="field.id" [formControlName]="field.id" class="w-full px-5 py-4 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all bg-slate-50/30" [placeholder]="getLocalized(field.placeholder) || 'example@email.com'">
+                      }
+                      @case ('password') {
+                        <input type="password" [id]="field.id" [formControlName]="field.id" class="w-full px-5 py-4 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all bg-slate-50/30" placeholder="••••••••">
+                      }
+                      @case ('longText') {
+                        <textarea [id]="field.id" [formControlName]="field.id" rows="4" class="w-full px-5 py-4 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all bg-slate-50/30 resize-none h-[calc(100%-32px)]" [placeholder]="getLocalized(field.placeholder) || ''"></textarea>
+                      }
+                      @case ('textarea') {
+                        <textarea [id]="field.id" [formControlName]="field.id" rows="4" class="w-full px-5 py-4 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all bg-slate-50/30 resize-none h-[calc(100%-32px)]" [placeholder]="getLocalized(field.placeholder) || ''"></textarea>
+                      }
+                      @case ('dropdown') {
+                        <select [id]="field.id" [formControlName]="field.id" class="w-full px-5 py-4 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all bg-slate-50/30 appearance-none">
+                          <option value="">{{ lang.currentLang() === 'es' ? 'Seleccione una opción' : 'Select an option' }}</option>
+                          @for (option of getOptions(field.options); track option) {
+                            <option [value]="option">{{ option }}</option>
+                          }
+                        </select>
+                      }
+                      @case ('select') {
+                        <div class="space-y-3 py-2">
+                          @for (option of getOptions(field.options); track option; let optIdx = $index) {
+                            <label class="flex items-center gap-4 cursor-pointer group">
+                              <input type="radio" [name]="field.id" [value]="option" [formControlName]="field.id" class="w-5 h-5 text-indigo-600 border-slate-300 focus:ring-indigo-500">
+                              <span class="text-base text-slate-600 group-hover:text-slate-900 transition-colors">{{ option }}</span>
+                            </label>
+                          }
+                        </div>
+                      }
+                      @case ('checkbox') {
+                        <div class="flex items-center h-full">
+                          <input type="checkbox" [id]="field.id" [formControlName]="field.id" class="w-6 h-6 text-indigo-600 rounded-lg border-slate-300 focus:ring-indigo-500">
+                          <span class="ml-4 text-base text-slate-600">{{ getLocalized(field.placeholder) || (lang.currentLang() === 'es' ? 'Sí, acepto los términos' : 'Yes, I agree to the terms') }}</span>
+                        </div>
+                      }
+                      @case ('ssoLogin') {
+                        <button type="button" class="w-full px-6 py-5 bg-slate-900 hover:bg-black text-white rounded-2xl shadow-xl font-bold flex items-center justify-center gap-4 transition-all active:scale-95 text-lg">
+                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75" /></svg>
+                          {{ getLocalized(field.placeholder) || 'LOGIN WITH SSO' }}
+                        </button>
+                      }
+                      @case ('message') {
+                        <div class="p-6 bg-indigo-50 text-indigo-800 rounded-3xl text-base border border-indigo-100 h-full overflow-y-auto leading-relaxed shadow-sm">
+                          {{ field.defaultValue || 'This is a message block.' }}
+                        </div>
+                      }
+                      @case ('container') {
+                        <div class="p-6 border-2 border-dashed border-slate-200 rounded-3xl text-center text-slate-400 text-sm font-bold uppercase tracking-widest h-full flex items-center justify-center">
+                          Container Block
+                        </div>
+                      }
+                      @case ('carousel') {
+                        <div class="h-full bg-slate-50 rounded-[2rem] flex items-center justify-between px-6 relative overflow-hidden group border border-slate-100 shadow-sm">
+                          <button type="button" (click)="$event.stopPropagation()" class="p-3 rounded-full bg-white text-slate-600 hover:bg-slate-50 transition-all shadow-lg z-10">
+                            <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
+                          </button>
+                          <div class="flex flex-col items-center gap-6 flex-1">
+                             <div class="w-full aspect-video rounded-3xl bg-slate-200 flex items-center justify-center overflow-hidden shadow-inner">
+                               <img [src]="'https://picsum.photos/seed/' + field.id + '/800/450'" class="w-full h-full object-cover" referrerpolicy="no-referrer" alt="Carousel image">
+                             </div>
+                             <div class="flex gap-3">
+                               <div class="w-3 h-3 rounded-full bg-indigo-500"></div>
+                               <div class="w-3 h-3 rounded-full bg-slate-300"></div>
+                               <div class="w-3 h-3 rounded-full bg-slate-300"></div>
+                             </div>
+                          </div>
+                          <button type="button" (click)="$event.stopPropagation()" class="p-3 rounded-full bg-white text-slate-600 hover:bg-slate-50 transition-all shadow-lg z-10">
+                            <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" /></svg>
+                          </button>
+                        </div>
+                      }
+                      @case ('button') {
+                        <button type="button" (click)="nextStep()" class="w-full h-full bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl font-bold shadow-2xl transition-all flex items-center justify-center active:scale-95 uppercase tracking-widest text-sm">
+                          {{ getLocalized(field.label) || 'Action Button' }}
+                        </button>
+                      }
+                      @case ('effect') {
+                        <div class="h-full bg-gradient-to-br from-indigo-600 to-purple-700 rounded-[2rem] flex items-center justify-center overflow-hidden relative group cursor-pointer shadow-xl" 
+                             (click)="triggerEffect()"
+                             (keydown.enter)="triggerEffect()"
+                             tabindex="0"
+                             role="button"
+                             aria-label="Trigger effect">
+                           <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-from)_0%,_transparent_70%)] opacity-50 animate-pulse"></div>
+                           <svg class="w-16 h-16 text-white animate-bounce relative z-10 group-hover:scale-125 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                        </div>
+                      }
+                      @case ('imageDropzone') {
+                        <div class="h-full border-2 border-dashed border-slate-200 rounded-[2rem] flex flex-col items-center justify-center text-slate-400 bg-slate-50 hover:bg-slate-100 hover:border-indigo-300 transition-all cursor-pointer relative overflow-hidden group"
+                             (click)="fileInput.click()"
+                             (keydown.enter)="fileInput.click()"
+                             tabindex="0"
+                             role="button"
+                             aria-label="Upload image">
+                          <input #fileInput type="file" class="hidden" (change)="onFileSelected($event, field.id)">
+                          @if (formData[field.id + '_preview']) {
+                            <img [src]="formData[field.id + '_preview']" class="absolute inset-0 w-full h-full object-cover" alt="Uploaded preview">
+                            <div class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-sm">
+                              <span class="text-white text-sm font-bold uppercase tracking-widest">Change Image</span>
+                            </div>
+                          } @else {
+                            <div class="bg-white p-6 rounded-3xl shadow-md mb-4 group-hover:scale-110 transition-transform">
+                              <svg class="w-10 h-10 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                            </div>
+                            <span class="text-xs font-bold uppercase tracking-widest">Upload Image</span>
+                          }
+                        </div>
+                      }
+                      @case ('drawing') {
+                        <div class="h-full bg-white border border-slate-200 rounded-[2rem] relative overflow-hidden cursor-crosshair group shadow-inner">
+                          <canvas [id]="'canvas-' + field.id" class="w-full h-full bg-slate-50/30"></canvas>
+                          <div class="absolute top-6 right-6 flex gap-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <button type="button" class="p-3 bg-white border border-slate-200 rounded-2xl hover:bg-slate-50 shadow-xl text-slate-600">
+                              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                            </button>
+                          </div>
+                          <div class="absolute bottom-6 left-1/2 -translate-x-1/2 px-6 py-2 bg-slate-900/90 text-white text-xs font-bold uppercase tracking-widest rounded-full backdrop-blur-md shadow-2xl">
+                            Signature Area
+                          </div>
+                        </div>
+                      }
+                    }
+                    
+                    @if (stepForm.get(field.id)?.invalid && stepForm.get(field.id)?.touched) {
+                      <p class="mt-2 text-[10px] font-bold text-red-500 uppercase tracking-wider">Required field</p>
+                    }
+                  }
+                </div>
+              }
+            }
+          </div>
+
+              <div class="sticky bottom-0 p-10 bg-white border-t border-slate-50 shrink-0 flex justify-between items-center z-20">
+                <button type="button" (click)="previousStep()" [disabled]="currentStepIndex() === 0" class="px-8 py-4 border border-slate-200 text-slate-600 rounded-2xl font-bold text-sm uppercase tracking-widest hover:bg-slate-50 transition-all disabled:opacity-30 disabled:cursor-not-allowed shadow-sm">
+                  {{ lang.currentLang() === 'es' ? 'Atrás' : 'Back' }}
+                </button>
+                
+                <div class="flex gap-4">
+                  @if (isLastStep()) {
+                    <button type="button" (click)="submitWorkflow()" [disabled]="stepForm.invalid" class="bg-emerald-600 hover:bg-emerald-700 text-white px-12 py-4 rounded-2xl font-bold text-sm uppercase tracking-widest transition-all shadow-xl shadow-emerald-200 disabled:opacity-50 disabled:cursor-not-allowed active:scale-95">
+                      {{ lang.currentLang() === 'es' ? 'Enviar' : 'Submit' }}
+                    </button>
+                  } @else {
+                    <button type="submit" [disabled]="stepForm.invalid" class="bg-indigo-600 hover:bg-indigo-700 text-white px-12 py-4 rounded-2xl font-bold text-sm uppercase tracking-widest transition-all shadow-xl shadow-indigo-200 disabled:opacity-50 disabled:cursor-not-allowed active:scale-95">
+                      {{ lang.currentLang() === 'es' ? 'Continuar' : 'Continue' }}
+                    </button>
+                  }
+                </div>
+              </div>
+            </form>
+            
+            <!-- Mock App Footer -->
+            <div class="bg-white border-t border-slate-200 px-6 py-4 flex items-center justify-center sticky bottom-0 z-10 shrink-0 mt-auto shadow-sm">
+              <a href="#" class="text-xs font-medium text-slate-400 hover:text-[#003366] transition-colors uppercase tracking-wider">{{ lang.currentLang() === 'es' ? 'Términos y Condiciones' : 'Terms and Conditions' }}</a>
+            </div>
+          </div>
+        </div>
+      } @else {
+        <!-- Scaled Device Preview -->
+        <div class="relative transition-all duration-500 ease-in-out shadow-2xl origin-center shrink-0"
+             [style.width]="isLandscape() ? currentDevice().height : currentDevice().width"
+             [style.height]="isLandscape() ? currentDevice().width : currentDevice().height"
+             [style.transform]="'scale(' + previewScale() + ')'"
+             [class.rounded-[3.5rem]]="currentDevice().platform === 'apple'"
+             [class.rounded-[2rem]]="currentDevice().platform === 'android'"
+             class="border-[12px] border-slate-900 bg-slate-900 overflow-hidden">
+          
+          <!-- Apple Dynamic Island (Portrait) -->
+          @if (currentDevice().platform === 'apple' && selectedDevice().includes('iphone') && !isLandscape()) {
+            <div class="absolute top-3 left-1/2 -translate-x-1/2 w-32 h-8 bg-black rounded-full z-50 flex items-center justify-center px-4">
+              <div class="flex-1"></div>
+              <div class="w-2 h-2 rounded-full bg-slate-800 mr-2"></div>
+              <div class="w-1 h-1 rounded-full bg-indigo-500/40"></div>
+            </div>
+          }
+
+          <!-- Apple Dynamic Island (Landscape) -->
+          @if (currentDevice().platform === 'apple' && selectedDevice().includes('iphone') && isLandscape()) {
+            <div class="absolute left-3 top-1/2 -translate-y-1/2 w-7 h-28 bg-black rounded-full z-50 flex flex-col items-center justify-center py-4">
+              <div class="w-1 h-1 rounded-full bg-indigo-500/40 mb-2"></div>
+              <div class="w-1.5 h-1.5 rounded-full bg-slate-800"></div>
+            </div>
+          }
+
+          <!-- Android Punch Hole (Portrait) -->
+          @if (currentDevice().platform === 'android' && selectedDevice().includes('pixel') && !isLandscape()) {
+            <div class="absolute top-4 left-1/2 -translate-x-1/2 w-4 h-4 bg-black rounded-full z-50 border border-slate-800"></div>
+          }
+
+          <!-- Android Punch Hole (Landscape) -->
+          @if (currentDevice().platform === 'android' && selectedDevice().includes('pixel') && isLandscape()) {
+            <div class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 bg-black rounded-full z-50 border border-slate-800"></div>
+          }
+
+          <!-- Actual Content Area -->
+          <div class="w-full h-full bg-slate-50 overflow-y-auto scrollbar-hide flex flex-col relative"
+               [class.pt-12]="currentDevice().platform === 'apple' && selectedDevice().includes('iphone') && !isLandscape()"
+               [class.pl-12]="currentDevice().platform === 'apple' && selectedDevice().includes('iphone') && isLandscape()"
+               [class.pt-10]="currentDevice().platform === 'android' && selectedDevice().includes('pixel') && !isLandscape()"
+               [class.pl-10]="currentDevice().platform === 'android' && selectedDevice().includes('pixel') && isLandscape()">
+            <!-- Mock App Navbar -->
+            <div class="bg-white border-b border-slate-200 px-4 py-3 flex items-center justify-between sticky top-0 z-10 shrink-0 shadow-sm">
+              <div class="flex items-center gap-2">
+                <svg viewBox="0 0 100 40" class="w-8 h-4" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M25 10C15 10 5 18 5 25C5 32 13 38 20 38C27 38 35 32 40 25C45 18 53 10 60 10C67 10 75 16 75 23C75 30 67 38 60 38C53 38 45 30 40 23C35 16 27 10 20 10" fill="none" stroke="#00C4E9" stroke-width="8" stroke-linecap="round"/>
+                </svg>
+                <span class="font-bold text-xs tracking-tight text-[#003366]">BROXEL</span>
+              </div>
+              <span class="font-semibold text-slate-800 text-sm truncate">{{ getLocalized(currentStep()?.title) }}</span>
+              <svg class="w-5 h-5 text-slate-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" /></svg>
+            </div>
+            <!-- Form -->
+            <div class="flex-1 flex flex-col bg-white">
+              
+              <form [formGroup]="stepForm" (ngSubmit)="nextStep()" class="flex-1 flex flex-col">
+                <div class="flex-1 relative p-8 min-h-[400px]">
+                  @if (currentStep()?.htmlCode) {
+                    <app-sandbox-iframe
+                      [htmlCode]="currentStep()!.htmlCode!"
+                      [cssCode]="currentStep()!.cssCode || ''"
+                      [jsCode]="currentStep()!.jsCode || ''"
+                      [contextData]="formData"
+                      class="w-full h-full min-h-[400px]"
+                    ></app-sandbox-iframe>
+                  } @else {
+                    @for (field of (currentStep()?.layout || currentStep()?.fields); track field.id; let i = $index) {
+                    <div [style.position]="field.position ? 'absolute' : 'relative'"
+                         [style.left.%]="field.position?.x || 0"
+                         [style.top.px]="field.position?.y || (i * 100)"
+                         [style.width.%]="field.dimensions?.width || 100"
+                         [style.height.px]="field.dimensions?.height || 90"
+                         class="mb-6">
+                      
+                      @if (isCustomField(field.type)) {
+                        <ng-container *appHasPermission="'custom_code:write'">
+                          <app-sandbox-iframe
+                            [htmlCode]="field.config?.html || ''"
+                            [cssCode]="field.config?.css || ''"
+                            [jsCode]="field.config?.js || ''"
+                            [contextData]="formData"
+                            (valueChange)="onSandboxValueChange(field.id, $event)"
+                            (statusChange)="onSandboxStatusChange()"
+                            class="w-full h-full min-h-[100px]"
+                          ></app-sandbox-iframe>
+                        </ng-container>
+                        @if (!hasPermission('custom_code:write')) {
+                           <div class="p-4 bg-red-50 text-red-800 rounded-2xl text-sm border border-red-100">
+                              You do not have permission to view this custom component.
+                           </div>
+                        }
+                      } @else if (getPluginComponent(field.type)) {
+                        <ng-container *ngComponentOutlet="
+                          getPluginComponent(field.type); 
+                          inputs: { 
+                            fieldId: field.id, 
+                            config: field, 
+                            value: stepForm.get(field.id)?.value,
+                            readonly: false
+                          }
+                        "></ng-container>
+                      } @else {
+                        @if (field.type !== 'message' && field.type !== 'container' && field.type !== 'ssoLogin' && field.type !== 'button' && field.type !== 'effect' && field.type !== 'text') {
+                          <label [for]="field.id" class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5 truncate">
+                            {{ getLocalized(field.label) }}
+                            @if (field.required) { <span class="text-red-500">*</span> }
+                          </label>
+                        }
+
+                      @switch (field.type) {
+                        @case ('shortText') {
+                          <input type="text" [id]="field.id" [formControlName]="field.id" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all bg-slate-50/50" [placeholder]="field.placeholder || ''">
+                        }
+                        @case ('text') {
+                          <div class="text-slate-700 py-2 text-sm leading-relaxed">
+                            {{ field.defaultValue || 'Static text content goes here...' }}
+                          </div>
+                        }
+                        @case ('number') {
+                          <input type="number" [id]="field.id" [formControlName]="field.id" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all bg-slate-50/50" [placeholder]="field.placeholder || ''">
+                        }
+                        @case ('email') {
+                          <input type="email" [id]="field.id" [formControlName]="field.id" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all bg-slate-50/50" [placeholder]="field.placeholder || 'example@email.com'">
+                        }
+                        @case ('password') {
+                          <input type="password" [id]="field.id" [formControlName]="field.id" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all bg-slate-50/50" placeholder="••••••••">
+                        }
+                        @case ('longText') {
+                          <textarea [id]="field.id" [formControlName]="field.id" rows="4" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all bg-slate-50/50 resize-none h-[calc(100%-28px)]" [placeholder]="field.placeholder || ''"></textarea>
+                        }
+                        @case ('textarea') {
+                          <textarea [id]="field.id" [formControlName]="field.id" rows="4" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all bg-slate-50/50 resize-none h-[calc(100%-28px)]" [placeholder]="field.placeholder || ''"></textarea>
+                        }
+                        @case ('dropdown') {
+                          <select [id]="field.id" [formControlName]="field.id" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all bg-slate-50/50 appearance-none">
+                            <option value="">{{ lang.currentLang() === 'es' ? 'Seleccione una opción' : 'Select an option' }}</option>
+                            @for (option of getOptions(field.options); track option) {
+                              <option [value]="option">{{ option }}</option>
+                            }
+                          </select>
+                        }
+                        @case ('select') {
+                          <div class="space-y-2 py-2">
+                            @for (option of getOptions(field.options); track option; let optIdx = $index) {
+                              <label class="flex items-center gap-3 cursor-pointer group">
+                                <input type="radio" [name]="field.id" [value]="option" [formControlName]="field.id" class="w-4 h-4 text-indigo-600 border-slate-300 focus:ring-indigo-500">
+                                <span class="text-sm text-slate-600 group-hover:text-slate-900 transition-colors">{{ option }}</span>
+                              </label>
+                            }
+                          </div>
+                        }
+                        @case ('checkbox') {
+                          <div class="flex items-center h-full">
+                            <input type="checkbox" [id]="field.id" [formControlName]="field.id" class="w-5 h-5 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500">
+                            <span class="ml-3 text-sm text-slate-600">Yes, I agree</span>
+                          </div>
+                        }
+                        @case ('ssoLogin') {
+                          <button type="button" class="w-full px-4 py-4 bg-slate-900 hover:bg-black text-white rounded-2xl shadow-lg font-bold flex items-center justify-center gap-3 transition-all active:scale-95">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75" /></svg>
+                            {{ field.placeholder || 'LOGIN WITH SSO' }}
+                          </button>
+                        }
+                        @case ('message') {
+                          <div class="p-4 bg-indigo-50 text-indigo-800 rounded-2xl text-sm border border-indigo-100 h-full overflow-y-auto leading-relaxed">
+                            {{ field.defaultValue || 'This is a message block.' }}
+                          </div>
+                        }
+                        @case ('container') {
+                          <div class="p-4 border-2 border-dashed border-slate-200 rounded-2xl text-center text-slate-400 text-xs font-bold uppercase tracking-widest h-full flex items-center justify-center">
+                            Container Block
+                          </div>
+                        }
+                        @case ('carousel') {
+                          <div class="h-full bg-slate-50 rounded-3xl flex items-center justify-between px-4 relative overflow-hidden group border border-slate-100">
+                            <button type="button" (click)="$event.stopPropagation()" class="p-2 rounded-full bg-white text-slate-600 hover:bg-slate-50 transition-all shadow-md z-10">
+                              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
+                            </button>
+                            <div class="flex flex-col items-center gap-4 flex-1">
+                               <div class="w-full aspect-video rounded-2xl bg-slate-200 flex items-center justify-center overflow-hidden shadow-inner">
+                                 <img [src]="'https://picsum.photos/seed/' + field.id + '/400/225'" class="w-full h-full object-cover" referrerpolicy="no-referrer" alt="Carousel image">
+                               </div>
+                               <div class="flex gap-2">
+                                 <div class="w-2 h-2 rounded-full bg-indigo-500"></div>
+                                 <div class="w-2 h-2 rounded-full bg-slate-300"></div>
+                                 <div class="w-2 h-2 rounded-full bg-slate-300"></div>
+                               </div>
+                            </div>
+                            <button type="button" (click)="$event.stopPropagation()" class="p-2 rounded-full bg-white text-slate-600 hover:bg-slate-50 transition-all shadow-md z-10">
+                              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" /></svg>
+                            </button>
+                          </div>
+                        }
+                        @case ('button') {
+                          <button type="button" (click)="nextStep()" class="w-full h-full bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl font-bold shadow-xl transition-all flex items-center justify-center active:scale-95 uppercase tracking-widest text-xs">
+                            {{ getLocalized(field.label) || 'Action Button' }}
+                          </button>
+                        }
+                        @case ('effect') {
+                          <div class="h-full bg-gradient-to-br from-indigo-600 to-purple-700 rounded-3xl flex items-center justify-center overflow-hidden relative group cursor-pointer shadow-lg" 
+                               (click)="triggerEffect()"
+                               (keydown.enter)="triggerEffect()"
+                               tabindex="0"
+                               role="button"
+                               aria-label="Trigger effect">
+                             <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-from)_0%,_transparent_70%)] opacity-50 animate-pulse"></div>
+                             <svg class="w-12 h-12 text-white animate-bounce relative z-10 group-hover:scale-125 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                          </div>
+                        }
+                        @case ('imageDropzone') {
+                          <div class="h-full border-2 border-dashed border-slate-200 rounded-3xl flex flex-col items-center justify-center text-slate-400 bg-slate-50 hover:bg-slate-100 hover:border-indigo-300 transition-all cursor-pointer relative overflow-hidden group"
+                               (click)="fileInput.click()"
+                               (keydown.enter)="fileInput.click()"
+                               tabindex="0"
+                               role="button"
+                               aria-label="Upload image">
+                            <input #fileInput type="file" class="hidden" (change)="onFileSelected($event, field.id)">
+                            @if (formData[field.id + '_preview']) {
+                              <img [src]="formData[field.id + '_preview']" class="absolute inset-0 w-full h-full object-cover" alt="Uploaded preview">
+                              <div class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-sm">
+                                <span class="text-white text-xs font-bold uppercase tracking-widest">Change Image</span>
+                              </div>
+                            } @else {
+                              <div class="bg-white p-4 rounded-2xl shadow-sm mb-3 group-hover:scale-110 transition-transform">
+                                <svg class="w-8 h-8 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                              </div>
+                              <span class="text-[10px] font-bold uppercase tracking-widest">Upload Image</span>
+                            }
+                          </div>
+                        }
+                        @case ('drawing') {
+                          <div class="h-full bg-white border border-slate-200 rounded-3xl relative overflow-hidden cursor-crosshair group shadow-inner">
+                            <canvas [id]="'canvas-' + field.id" class="w-full h-full bg-slate-50/30"></canvas>
+                            <div class="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <button type="button" class="p-2 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 shadow-md text-slate-600">
+                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                              </button>
+                            </div>
+                            <div class="absolute bottom-4 left-1/2 -translate-x-1/2 px-4 py-1.5 bg-slate-900/90 text-white text-[10px] font-bold uppercase tracking-widest rounded-full backdrop-blur-md shadow-lg">
+                              Signature Area
+                            </div>
+                          </div>
+                        }
+                      }
+                      
+                      @if (stepForm.get(field.id)?.invalid && stepForm.get(field.id)?.touched) {
+                        <p class="mt-2 text-[10px] font-bold text-red-500 uppercase tracking-wider">Required field</p>
+                      }
+                    }
+                  </div>
+                }
+              }
+            </div>
+
+                <div class="sticky bottom-0 p-8 bg-white border-t border-slate-50 shrink-0 flex justify-between items-center z-20">
+                  <button type="button" (click)="previousStep()" [disabled]="currentStepIndex() === 0" class="px-6 py-3 border border-slate-200 text-slate-600 rounded-2xl font-bold text-xs uppercase tracking-widest hover:bg-slate-50 transition-all disabled:opacity-30 disabled:cursor-not-allowed shadow-sm">
+                    Back
+                  </button>
+                  
+                  <div class="flex gap-3">
+                    @if (isLastStep()) {
+                      <button type="button" (click)="submitWorkflow()" [disabled]="stepForm.invalid" class="bg-emerald-600 hover:bg-emerald-700 text-white px-10 py-3 rounded-2xl font-bold text-xs uppercase tracking-widest transition-all shadow-lg shadow-emerald-200 disabled:opacity-50 disabled:cursor-not-allowed active:scale-95">
+                        Submit
+                      </button>
+                    } @else {
+                      <button type="submit" [disabled]="stepForm.invalid" class="bg-indigo-600 hover:bg-indigo-700 text-white px-10 py-3 rounded-2xl font-bold text-xs uppercase tracking-widest transition-all shadow-lg shadow-indigo-200 disabled:opacity-50 disabled:cursor-not-allowed active:scale-95">
+                        Continue
+                      </button>
+                    }
+                  </div>
+                </div>
+              </form>
+              <!-- Mock App Footer -->
+              <div class="bg-white border-t border-slate-200 px-4 py-3 flex items-center justify-center sticky bottom-0 z-10 shrink-0 mt-auto shadow-sm">
+                <a href="#" class="text-[10px] font-medium text-slate-400 hover:text-[#003366] transition-colors uppercase tracking-wider">{{ lang.currentLang() === 'es' ? 'Términos y Condiciones' : 'Terms and Conditions' }}</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  } @else {
+    <div class="flex flex-col justify-center items-center h-screen gap-4">
+      <div class="animate-spin rounded-full h-12 w-12 border-4 border-slate-200 border-b-indigo-600"></div>
+      <p class="text-slate-400 font-medium animate-pulse">Loading workflow...</p>
+    </div>
+  }
+</div>
