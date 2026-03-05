@@ -1,6 +1,7 @@
 import { WorkflowOrchestrator, OrchestratorAdapter } from './engine';
 import { WorkflowDefinition, WorkflowProject } from './models/definition';
 import { WorkflowInstance } from './models/instance';
+import { WorkflowDraftValidationError } from './validation/flow-validator';
 
 describe('WorkflowOrchestrator', () => {
   let orchestrator: WorkflowOrchestrator;
@@ -59,6 +60,23 @@ describe('WorkflowOrchestrator', () => {
     expect(newDef.status).toBe('ACTIVE');
     expect(mockAdapter.saveDefinition).toHaveBeenCalledTimes(2); // Deprecate old, save new
     expect(mockAdapter.saveWorkflowProject).toHaveBeenCalled();
+  });
+
+
+  it('should block publish when draft has validation errors', async () => {
+    mockProject.draftPayload.nodes = [
+      { id: 'start', type: 'START', name: 'Start' },
+      { id: 'loopA', type: 'SCRIPT_TASK', name: 'Loop A' },
+      { id: 'loopB', type: 'SCRIPT_TASK', name: 'Loop B' }
+    ];
+    mockProject.draftPayload.flows = [
+      { id: 'f1', sourceRef: 'start', targetRef: 'loopA' },
+      { id: 'f2', sourceRef: 'loopA', targetRef: 'loopB' },
+      { id: 'f3', sourceRef: 'loopB', targetRef: 'loopA' }
+    ];
+
+    await expect(orchestrator.publishDraft('test_process', 'admin')).rejects.toBeInstanceOf(WorkflowDraftValidationError);
+    expect(mockAdapter.saveDefinition).not.toHaveBeenCalled();
   });
 
   it('should start a process and pause at the first FORM_TASK', async () => {
