@@ -19,6 +19,7 @@ export class TelemetryService implements OnDestroy {
   private currentWorkflowId: string | null = null;
   private currentTenantId: string | null = null;
   private currentUserId: string | null = null;
+  private recentEvents: TelemetryEvent[] = [];
 
   constructor() {
     if (isPlatformBrowser(this.platformId)) {
@@ -73,6 +74,10 @@ export class TelemetryService implements OnDestroy {
     };
 
     this.eventBuffer.push(event);
+    this.recentEvents.push(event);
+    if (this.recentEvents.length > 200) {
+      this.recentEvents = this.recentEvents.slice(-200);
+    }
 
     // Si el buffer está lleno, forzar el envío inmediato
     if (this.eventBuffer.length >= this.BATCH_SIZE) {
@@ -117,5 +122,9 @@ export class TelemetryService implements OnDestroy {
   ngOnDestroy() {
     clearInterval(this.flushTimer);
     this.flushNow();
+  }
+
+  getRecentEvents(limit = 50): TelemetryEvent[] {
+    return this.recentEvents.slice(-Math.max(1, limit));
   }
 }
