@@ -2,6 +2,7 @@ import { WorkflowDefinition, WorkflowProject } from './models/definition';
 import { WorkflowInstance, WorkflowToken, HistoryEventType } from './models/instance';
 import { RuleEngine } from '../rule-engine/engine';
 import { ExecutionContext } from '../rule-engine/ast/types';
+import { FlowValidator, ValidationDiagnostic, WorkflowDraftValidationError } from './validation/flow-validator';
 
 export interface OrchestratorAdapter {
   // Project & Definition Management
@@ -23,13 +24,28 @@ export interface OrchestratorAdapter {
 
 export class WorkflowOrchestrator {
   private ruleEngine: RuleEngine;
+  private flowValidator: FlowValidator;
 
   constructor(private adapter: OrchestratorAdapter) {
     this.ruleEngine = new RuleEngine();
+    this.flowValidator = new FlowValidator();
+  }
+
+  async validateDraft(workflowKey: string): Promise<ValidationDiagnostic[]> {
+    const project = await this.adapter.getWorkflowProject(workflowKey);
+    const draftDefinition = this.buildDraftDefinition(project, 'system-validator');
+    return this.flowValidator.validate(draftDefinition);
   }
 
   async publishDraft(workflowKey: string, publishedBy: string): Promise<WorkflowDefinition> {
     const project = await this.adapter.getWorkflowProject(workflowKey);
+    const draftDefinition = this.buildDraftDefinition(project, publishedBy);
+
+    const diagnostics = this.flowValidator.validate(draftDefinition);
+    const blockingErrors = diagnostics.filter(diagnostic => diagnostic.severity === 'error');
+    if (blockingErrors.length > 0) {
+      throw new WorkflowDraftValidationError(blockingErrors);
+    }
     
     let nextVersion = 1;
     if (project.activeDefinitionId) {
@@ -48,8 +64,8 @@ export class WorkflowOrchestrator {
       version: nextVersion,
       name: project.name,
       description: project.description,
-      nodes: [...project.draftPayload.nodes],
-      flows: [...project.draftPayload.flows],
+      nodes: draftDefinition.nodes,
+      flows: draftDefinition.flows,
       status: 'ACTIVE',
       createdAt: new Date().toISOString(),
       createdBy: publishedBy
@@ -62,6 +78,22 @@ export class WorkflowOrchestrator {
     await this.adapter.saveWorkflowProject(project);
     
     return newDefinition;
+  }
+
+  private buildDraftDefinition(project: WorkflowProject, createdBy: string): WorkflowDefinition {
+    return {
+      id: 'draft',
+      workflowKey: project.key,
+      version: 0,
+      name: project.name,
+      description: project.description,
+      nodes: [...project.draftPayload.nodes],
+      flows: [...project.draftPayload.flows],
+      inputSchema: undefined,
+      status: 'ACTIVE',
+      createdAt: new Date().toISOString(),
+      createdBy
+    };
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
