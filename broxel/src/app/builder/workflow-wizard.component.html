@@ -1,0 +1,120 @@
+<div class="flex-1 w-full max-w-6xl mx-auto p-6 py-8 space-y-6">
+  <div class="flex items-center justify-between">
+    <div>
+      <h1 class="text-3xl font-bold text-slate-900">Asistente de Workflow</h1>
+      <p class="text-slate-500 mt-1">Crea un flujo base en lenguaje de negocio y valida antes de publicarlo.</p>
+    </div>
+    <div class="text-sm text-slate-500">Paso {{ currentStep() + 1 }} de {{ steps.length }}</div>
+  </div>
+
+  <div class="bg-white border border-slate-200 rounded-xl p-4 flex flex-wrap gap-2">
+    @for (label of steps; track $index) {
+      <div class="px-3 py-1.5 rounded-full text-xs font-semibold"
+           [class.bg-indigo-600]="$index === currentStep()"
+           [class.text-white]="$index === currentStep()"
+           [class.bg-slate-100]="$index !== currentStep()"
+           [class.text-slate-500]="$index !== currentStep()">
+        {{ label }}
+      </div>
+    }
+  </div>
+
+  <div class="bg-white border border-slate-200 rounded-2xl p-6 space-y-4">
+    @if (currentStep() === 0) {
+      <label class="block text-sm font-semibold text-slate-700">¿Qué quieres lograr con este proceso?</label>
+      <input class="w-full border border-slate-300 rounded-lg px-3 py-2" [ngModel]="form().objective" (ngModelChange)="setField('objective', $event)" placeholder="Ej: Aprobar reembolsos" />
+      <label class="block text-sm font-semibold text-slate-700">¿Dónde ocurre hoy?</label>
+      <select class="w-full border border-slate-300 rounded-lg px-3 py-2" [ngModel]="form().currentChannel" (ngModelChange)="setField('currentChannel', $event)">
+        <option>Email</option><option>Planilla</option><option>CRM</option><option>WhatsApp</option><option>Otro</option>
+      </select>
+    }
+
+    @if (currentStep() === 1) {
+      <label class="block text-sm font-semibold text-slate-700">¿Qué evento inicia este proceso?</label>
+      <select class="w-full border border-slate-300 rounded-lg px-3 py-2" [ngModel]="form().triggerType" (ngModelChange)="setField('triggerType', $event)">
+        <option value="form_submitted">Al recibir formulario</option>
+        <option value="email_received">Cuando llega un correo</option>
+        <option value="scheduled">En fecha/hora</option>
+        <option value="manual">Manual</option>
+      </select>
+      @if (form().triggerType !== 'manual') {
+        <label class="block text-sm font-semibold text-slate-700">Frecuencia</label>
+        <input class="w-full border border-slate-300 rounded-lg px-3 py-2" [ngModel]="form().frequency" (ngModelChange)="setField('frequency', $event)" />
+      }
+    }
+
+    @if (currentStep() === 2) {
+      <label class="block text-sm font-semibold text-slate-700">Participantes (separados por coma)</label>
+      <input class="w-full border border-slate-300 rounded-lg px-3 py-2" [ngModel]="form().participants.join(', ')" (ngModelChange)="setField('participants', parseCsv($event))" />
+      <label class="block text-sm font-semibold text-slate-700">¿Quién aprueba?</label>
+      <input class="w-full border border-slate-300 rounded-lg px-3 py-2" [ngModel]="form().approver" (ngModelChange)="setField('approver', $event)" />
+    }
+
+    @if (currentStep() === 3) {
+      <label class="block text-sm font-semibold text-slate-700">Pasos clave (3-5, separados por coma)</label>
+      <input class="w-full border border-slate-300 rounded-lg px-3 py-2" [ngModel]="form().keySteps.join(', ')" (ngModelChange)="setField('keySteps', parseCsv($event))" />
+      <label class="block text-sm font-semibold text-slate-700">Datos necesarios</label>
+      <input class="w-full border border-slate-300 rounded-lg px-3 py-2" [ngModel]="form().dataFields" (ngModelChange)="setField('dataFields', $event)" />
+    }
+
+    @if (currentStep() === 4) {
+      <label class="block text-sm font-semibold text-slate-700">Condición de ruteo</label>
+      <input class="w-full border border-slate-300 rounded-lg px-3 py-2" [ngModel]="form().routeCondition" (ngModelChange)="setField('routeCondition', $event)" />
+      <div class="grid md:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-semibold text-slate-700">Ruta cuando se cumple</label>
+          <input class="w-full border border-slate-300 rounded-lg px-3 py-2" [ngModel]="form().routeActionHigh" (ngModelChange)="setField('routeActionHigh', $event)" />
+        </div>
+        <div>
+          <label class="block text-sm font-semibold text-slate-700">Ruta alternativa</label>
+          <input class="w-full border border-slate-300 rounded-lg px-3 py-2" [ngModel]="form().routeActionLow" (ngModelChange)="setField('routeActionLow', $event)" />
+        </div>
+      </div>
+    }
+
+    @if (currentStep() === 5) {
+      <label class="block text-sm font-semibold text-slate-700">Integraciones (coma)</label>
+      <input class="w-full border border-slate-300 rounded-lg px-3 py-2" [ngModel]="form().integrations.join(', ')" (ngModelChange)="setField('integrations', parseCsv($event))" />
+      <label class="block text-sm font-semibold text-slate-700">Acción en herramientas</label>
+      <input class="w-full border border-slate-300 rounded-lg px-3 py-2" [ngModel]="form().integrationAction" (ngModelChange)="setField('integrationAction', $event)" />
+    }
+
+    @if (currentStep() === 6) {
+      <label class="block text-sm font-semibold text-slate-700">¿Cómo sabrás que fue exitoso?</label>
+      <input class="w-full border border-slate-300 rounded-lg px-3 py-2" [ngModel]="form().successMetric" (ngModelChange)="setField('successMetric', $event)" />
+      <label class="block text-sm font-semibold text-slate-700">¿A quién avisar al finalizar?</label>
+      <input class="w-full border border-slate-300 rounded-lg px-3 py-2" [ngModel]="form().finalNotify" (ngModelChange)="setField('finalNotify', $event)" />
+    }
+
+    @if (currentStep() === 7) {
+      <div class="grid lg:grid-cols-2 gap-6">
+        <div class="space-y-3">
+          <h3 class="font-bold text-slate-800">Resumen ejecutivo</h3>
+          <p class="text-sm text-slate-600">Cuando ocurra <b>{{ form().triggerType }}</b>, se ejecutarán {{ workflowPreview().steps?.length }} bloques. Si <b>{{ form().routeCondition }}</b>, irá a <b>{{ form().routeActionHigh }}</b>; en caso contrario a <b>{{ form().routeActionLow }}</b>. Al final se notificará a <b>{{ form().finalNotify }}</b>.</p>
+          <h3 class="font-bold text-slate-800">Checklist de calidad</h3>
+          <ul class="space-y-1">
+            @for (item of qualityChecklist(); track item.label) {
+              <li class="text-sm" [class.text-emerald-700]="item.ok" [class.text-rose-600]="!item.ok">{{ item.ok ? '✓' : '✗' }} {{ item.label }}</li>
+            }
+          </ul>
+          <h3 class="font-bold text-slate-800">Simulación rápida</h3>
+          <ul class="list-disc pl-5 text-sm text-slate-600">
+            @for (line of simulation(); track line) { <li>{{ line }}</li> }
+          </ul>
+        </div>
+        <div>
+          <h3 class="font-bold text-slate-800 mb-2">Vista técnica (JSON)</h3>
+          <pre class="bg-slate-950 text-emerald-300 text-xs rounded-xl p-4 overflow-auto max-h-[460px]">{{ workflowPreview() | json }}</pre>
+        </div>
+      </div>
+    }
+  </div>
+
+  <div class="flex justify-between">
+    <button (click)="prev()" [disabled]="currentStep() === 0" class="px-4 py-2 rounded-lg border border-slate-300 disabled:opacity-50">Anterior</button>
+    <div class="flex gap-3">
+      <button *ngIf="currentStep() < steps.length - 1" (click)="next()" class="px-4 py-2 rounded-lg bg-indigo-600 text-white">Siguiente</button>
+      <button *ngIf="currentStep() === steps.length - 1" (click)="createFromWizard()" class="px-4 py-2 rounded-lg bg-emerald-600 text-white">Guardar borrador</button>
+    </div>
+  </div>
+</div>
