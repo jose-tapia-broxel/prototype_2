@@ -115,6 +115,11 @@ export class WorkflowWizardComponent {
   }
 
   private buildWorkflowDefinition(state: WizardState): Partial<WorkflowDefinition> {
+    const stepWidth = 360;
+    const stepGap = 120;
+    const decisionStepX = 40;
+    const laneY = 120;
+
     const baseSteps: WorkflowStep[] = state.keySteps
       .filter(Boolean)
       .map((stepName, idx, arr) => ({
@@ -122,8 +127,9 @@ export class WorkflowWizardComponent {
         title: { es: stepName, en: stepName },
         fields: [],
         navigation: { nextStep: idx < arr.length - 1 ? `step_${idx + 2}` : undefined },
-        position: { x: 150 + idx * 420, y: 120 },
-        dimensions: { width: 360, height: 650 }
+        // Position generated screens in sequence with clear spacing to avoid overlap in canvas.
+        position: { x: decisionStepX + stepWidth + stepGap + idx * (stepWidth + stepGap), y: laneY },
+        dimensions: { width: stepWidth, height: 650 }
       }));
 
     const decisionStep: WorkflowStep = {
@@ -141,8 +147,8 @@ export class WorkflowWizardComponent {
         }
       ],
       navigation: { nextStep: baseSteps[0]?.id },
-      position: { x: 40, y: 120 },
-      dimensions: { width: 360, height: 650 }
+      position: { x: decisionStepX, y: laneY },
+      dimensions: { width: stepWidth, height: 650 }
     };
 
     return {
