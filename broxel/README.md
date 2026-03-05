@@ -18,3 +18,7 @@ View your app in AI Studio: https://ai.studio/apps/c94396c4-dfbb-431a-b4fe-a83f2
 2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
 3. Run the app:
    `npm run dev`
+
+## Documentación de arquitectura
+
+- Diseño de asistente de explicabilidad reactiva: [`docs/asistente-explicabilidad-reactiva.md`](docs/asistente-explicabilidad-reactiva.md)
