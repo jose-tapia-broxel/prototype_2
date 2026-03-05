@@ -9,5 +9,6 @@ export const routes: Routes = [
   { path: 'wizard/new', component: WorkflowWizardComponent },
   { path: 'builder/:id', component: WorkflowBuilderComponent },
   { path: 'run/:id', component: WorkflowRendererComponent },
+  { path: 'insights', component: BusinessInsightsComponent },
   { path: '**', redirectTo: '' }
 ];
