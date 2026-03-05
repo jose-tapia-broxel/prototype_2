@@ -7,6 +7,7 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { WorkflowService } from '../workflow.service';
 import { WorkflowDefinition, FieldType, FormField, WorkflowNavigation, WorkflowStep, LocalizedString, CustomFieldDefinition } from '../models/workflow.model';
 import { LanguageService } from '../language.service';
+import { NaturalLanguageWorkflowService } from '../nl-workflow.service';
 
 interface DraggableField {
   type: FieldType;
@@ -28,6 +29,7 @@ export class WorkflowBuilderComponent implements OnInit {
   private workflowService = inject(WorkflowService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
+  private nlWorkflowService = inject(NaturalLanguageWorkflowService);
   lang = inject(LanguageService);
 
   private sanitizer = inject(DomSanitizer);
@@ -141,6 +143,8 @@ export class WorkflowBuilderComponent implements OnInit {
   });
 
   workflowMetadata: { name: LocalizedString, description: LocalizedString } = { name: { en: '', es: '' }, description: { en: '', es: '' } };
+  naturalPrompt = '';
+  generationWarnings = signal<string[]>([]);
 
   constructor() {
     effect(() => {
@@ -617,5 +621,36 @@ export class WorkflowBuilderComponent implements OnInit {
         this.router.navigate(['/']);
       });
     }
+  }
+
+  generateFromPrompt() {
+    if (!this.naturalPrompt.trim()) return;
+
+    const result = this.nlWorkflowService.generateFromText(this.naturalPrompt);
+    const workflow = result.workflow;
+
+    this.workflowMetadata.name = workflow.name || { en: '', es: '' };
+    this.workflowMetadata.description = workflow.description || { en: '', es: '' };
+
+    this.nameControl.setValue(this.getLocalized(this.workflowMetadata.name));
+    this.descriptionControl.setValue(this.getLocalized(this.workflowMetadata.description));
+
+    this.steps = (workflow.steps || []).map((s, i) => ({
+      id: s.id,
+      title: s.title,
+      fields: [...(s.layout || s.fields || [])],
+      navigation: s.navigation || {},
+      position: s.position || { x: 50 + (i * 450), y: 50 },
+      dimensions: s.dimensions || { width: 360, height: 650 },
+      stateCode: s.stateCode || '',
+      onLoadingCode: s.onLoadingCode || '',
+      onInteractiveCode: s.onInteractiveCode || '',
+      onCompleteCode: s.onCompleteCode || '',
+      onDestroyCode: s.onDestroyCode || '',
+      htmlCode: s.htmlCode || '',
+      cssCode: s.cssCode || ''
+    }));
+
+    this.generationWarnings.set(result.intent.ambiguities.map(item => item.question));
   }
 }
