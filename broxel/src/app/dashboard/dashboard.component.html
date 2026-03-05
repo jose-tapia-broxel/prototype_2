@@ -33,9 +33,19 @@
         {{ lang.currentLang() === 'en' ? 'Generate Sample' : 'Generar Ejemplo' }}
       </button>
       
+      <a routerLink="/wizard/new" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-medium transition-colors shadow-sm flex items-center gap-2">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6l4 2m6-2a10 10 0 11-20 0 10 10 0 0120 0z" /></svg>
+        {{ lang.currentLang() === 'en' ? 'Wizard Assistant' : 'Asistente Wizard' }}
+      </a>
+
       <a routerLink="/builder/new" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium transition-colors shadow-sm flex items-center gap-2">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
         {{ lang.currentLang() === 'en' ? 'Create Workflow' : 'Crear Flujo' }}
+      </a>
+
+      <a routerLink="/wizard/new" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-medium transition-colors shadow-sm flex items-center gap-2">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.311-3.311L2.03 11.78l2.846-.813a4.5 4.5 0 0 0 3.311-3.311L9 4.81l.813 2.846a4.5 4.5 0 0 0 3.311 3.311l2.846.813-2.846.813a4.5 4.5 0 0 0-3.311 3.311ZM18.25 8.25h3.5M20 6.5v3.5m-1.75 8.75h3.5M20 17.25v3.5" /></svg>
+        {{ lang.currentLang() === 'en' ? 'Guided Wizard' : 'Asistente Guiado' }}
       </a>
     </div>
   </div>
