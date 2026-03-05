@@ -33,6 +33,11 @@
         {{ lang.currentLang() === 'en' ? 'Generate Sample' : 'Generar Ejemplo' }}
       </button>
       
+      <a routerLink="/wizard/new" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-medium transition-colors shadow-sm flex items-center gap-2">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6l4 2m6-2a10 10 0 11-20 0 10 10 0 0120 0z" /></svg>
+        {{ lang.currentLang() === 'en' ? 'Wizard Assistant' : 'Asistente Wizard' }}
+      </a>
+
       <a routerLink="/builder/new" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium transition-colors shadow-sm flex items-center gap-2">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
         {{ lang.currentLang() === 'en' ? 'Create Workflow' : 'Crear Flujo' }}
