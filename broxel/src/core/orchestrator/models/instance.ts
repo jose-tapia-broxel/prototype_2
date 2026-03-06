@@ -1,58 +1,51 @@
-export type InstanceStatus = 
+export type InstanceStatus =
   | 'CREATED'
   | 'RUNNING'
-  | 'WAITING_FOR_ACTION' // Paused for Human Task or External Event
-  | 'SUSPENDED'          // Manually paused
+  | 'WAITING'
+  | 'SUSPENDED'
   | 'COMPLETED'
   | 'FAILED'
   | 'CANCELLED';
 
+export type TokenWaitReason = 'FORM' | 'APPROVAL' | 'TIMER' | 'RETRY_BACKOFF';
+
 export interface WorkflowToken {
   id: string;
-  nodeId: string; // Where is this token currently sitting?
+  nodeId: string;
   status: 'ACTIVE' | 'WAITING' | 'COMPLETED' | 'FAILED';
-  
-  // For Parallel Gateways (Fork/Join)
-  parentId?: string; // If this token was split from another
-  
+  waitReason?: TokenWaitReason;
+  resumeAt?: string;
+  retryCount?: number;
+  lastErrorCode?: string;
+  parentId?: string;
   createdAt: string;
   updatedAt: string;
 }
 
 export interface WorkflowInstance {
   id: string;
-  definitionId: string; // The specific versioned definition
-  definitionKey: string; // The stable identifier (e.g., 'credit_approval')
-  
+  definitionId: string;
+  definitionKey: string;
   status: InstanceStatus;
-  
-  // The global state/data of the workflow
-  // This is what the Rule Engine evaluates against
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   context: Record<string, any>;
-  
-  // The active execution paths
   tokens: WorkflowToken[];
-  
-  // For Sub-Processes
   parentInstanceId?: string;
-  
-  // Optimistic Locking
   version: number;
-  
   createdAt: string;
   updatedAt: string;
   completedAt?: string;
-  
-  // Audit trail
   history: InstanceHistoryEvent[];
 }
 
-export type HistoryEventType = 
+export type HistoryEventType =
   | 'INSTANCE_STARTED'
   | 'NODE_ENTERED'
+  | 'NODE_WAITING'
   | 'NODE_COMPLETED'
   | 'NODE_FAILED'
+  | 'TRANSITION_TAKEN'
+  | 'RETRY_SCHEDULED'
   | 'TOKEN_CREATED'
   | 'TOKEN_CONSUMED'
   | 'CONTEXT_UPDATED'
@@ -65,8 +58,6 @@ export interface InstanceHistoryEvent {
   nodeId?: string;
   tokenId?: string;
   timestamp: string;
-  
-  // What changed? (e.g., diff of the context, error message, user who completed a task)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   payload?: Record<string, any>;
 }
