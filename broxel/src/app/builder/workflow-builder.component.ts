@@ -8,6 +8,7 @@ import { WorkflowService } from '../workflow.service';
 import { WorkflowDefinition, FieldType, FormField, WorkflowNavigation, WorkflowStep, LocalizedString, CustomFieldDefinition } from '../models/workflow.model';
 import { LanguageService } from '../language.service';
 import { UxLevelService } from './ux-level.service';
+import { NaturalLanguageWorkflowService, IntentAmbiguity } from '../nl-workflow.service';
 
 interface DraggableField {
   type: FieldType;
@@ -650,7 +651,7 @@ export class WorkflowBuilderComponent implements OnInit {
     this.nameControl.setValue(this.getLocalized(this.workflowMetadata.name));
     this.descriptionControl.setValue(this.getLocalized(this.workflowMetadata.description));
 
-    this.steps = (workflow.steps || []).map((s, i) => ({
+    this.steps = (workflow.steps || []).map((s: WorkflowStep, i: number) => ({
       id: s.id,
       title: s.title,
       fields: [...(s.layout || s.fields || [])],
@@ -666,6 +667,6 @@ export class WorkflowBuilderComponent implements OnInit {
       cssCode: s.cssCode || ''
     }));
 
-    this.generationWarnings.set(result.intent.ambiguities.map(item => item.question));
+    this.generationWarnings.set(result.intent.ambiguities.map((item: IntentAmbiguity) => item.question));
   }
 }
