@@ -229,7 +229,7 @@ function canReachEnd(
 function runContradictoryRuleRule(context: ValidationContext): ValidationDiagnostic[] {
   const diagnostics: ValidationDiagnostic[] = [];
 
-  for (const node of context.definition.nodes.filter(n => n.type === 'EXCLUSIVE_GATEWAY')) {
+  for (const node of context.definition.nodes.filter(n => n.type === 'CONDITION')) {
     const flows = (context.outgoing.get(node.id) ?? []).filter(flow => flow.condition);
     for (let i = 0; i < flows.length; i++) {
       for (let j = i + 1; j < flows.length; j++) {
@@ -368,7 +368,7 @@ function collectPayloadReferences(value: unknown, bucket: Set<string>): void {
 function runIntegrationMappingRule(context: ValidationContext): ValidationDiagnostic[] {
   const diagnostics: ValidationDiagnostic[] = [];
 
-  for (const node of context.definition.nodes.filter(n => n.type === 'SERVICE_TASK')) {
+  for (const node of context.definition.nodes.filter(n => n.type === 'API_CALL')) {
     const payload = node.actionPayload as ServiceTaskPayload | undefined;
     if (!payload?.integrationContract) {
       continue;

@@ -74,8 +74,8 @@ export class WorkflowOrchestrator {
       version: nextVersion,
       name: project.name,
       description: project.description,
-      nodes: draftDefinition.nodes,
-      flows: draftDefinition.flows,
+      nodes: project.draftPayload.nodes,
+      flows: project.draftPayload.flows,
       status: 'ACTIVE',
       createdAt: new Date().toISOString(),
       createdBy: publishedBy
