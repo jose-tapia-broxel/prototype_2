@@ -7,6 +7,7 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { WorkflowService } from '../workflow.service';
 import { WorkflowDefinition, FieldType, FormField, WorkflowNavigation, WorkflowStep, LocalizedString, CustomFieldDefinition } from '../models/workflow.model';
 import { LanguageService } from '../language.service';
+import { UxLevelService } from './ux-level.service';
 
 interface DraggableField {
   type: FieldType;
@@ -29,6 +30,7 @@ export class WorkflowBuilderComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   lang = inject(LanguageService);
+  uxLevel = inject(UxLevelService);
 
   private sanitizer = inject(DomSanitizer);
 
