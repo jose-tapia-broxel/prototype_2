@@ -1,0 +1,204 @@
+<div class="flex-1 w-full max-w-6xl mx-auto p-6 py-8">
+  <div class="flex items-center justify-between mb-8">
+    <div>
+      <h1 class="text-3xl font-bold text-slate-900">Asistente guiado de workflows</h1>
+      <p class="text-slate-500 mt-2">Responde preguntas simples y generamos automáticamente pasos, reglas e integraciones.</p>
+    </div>
+    <a routerLink="/" class="text-sm font-semibold text-indigo-600 hover:text-indigo-700">Volver al dashboard</a>
+  </div>
+
+  <div class="grid lg:grid-cols-[1.1fr_0.9fr] gap-6">
+    <section class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+      <div class="flex items-center justify-between mb-5">
+        <span class="text-xs uppercase tracking-widest text-slate-400 font-bold">Paso {{ current() + 1 }} de {{ steps.length }}</span>
+        <span class="text-sm font-semibold text-slate-700">{{ steps[current()] }}</span>
+      </div>
+
+      @switch (current()) {
+        @case (0) {
+          <div class="space-y-4">
+            <label class="field">
+              <span>¿Qué quieres lograr con este proceso?</span>
+              <input [(ngModel)]="answers.goal" placeholder="Ej: Aprobar reembolsos" />
+            </label>
+            <label class="field">
+              <span>¿Dónde ocurre hoy?</span>
+              <input [(ngModel)]="answers.currentPlace" placeholder="Ej: Email, CRM, Planilla" />
+            </label>
+          </div>
+        }
+        @case (1) {
+          <div class="space-y-4">
+            <label class="field">
+              <span>¿Qué evento inicia este proceso?</span>
+              <select [(ngModel)]="answers.trigger">
+                <option value="form">Cuando llega un formulario</option>
+                <option value="email">Cuando llega un correo</option>
+                <option value="schedule">En fecha/hora programada</option>
+                <option value="manual">Manual</option>
+              </select>
+            </label>
+
+            @if (answers.trigger !== 'manual') {
+              <label class="field">
+                <span>¿Con qué frecuencia ocurre?</span>
+                <select [(ngModel)]="answers.frequency">
+                  <option value="high">Varias veces al día</option>
+                  <option value="daily">Diario</option>
+                  <option value="weekly">Semanal</option>
+                  <option value="sporadic">Esporádico</option>
+                </select>
+              </label>
+            }
+          </div>
+        }
+        @case (2) {
+          <div class="space-y-4">
+            <label class="field">
+              <span>¿Qué equipos participan?</span>
+              <input [(ngModel)]="answers.team" placeholder="Ej: Ventas, Finanzas, Soporte" />
+            </label>
+
+            <label class="check">
+              <input type="checkbox" [(ngModel)]="answers.hasApproval" />
+              <span>Este proceso requiere aprobación</span>
+            </label>
+
+            @if (answers.hasApproval) {
+              <label class="field">
+                <span>¿Quién aprueba?</span>
+                <input [(ngModel)]="answers.approver" placeholder="Rol o persona" />
+              </label>
+              <label class="field">
+                <span>Nivel de aprobación</span>
+                <select [(ngModel)]="answers.approvalLevels">
+                  <option value="single">Un nivel</option>
+                  <option value="multi">Multinivel</option>
+                </select>
+              </label>
+
+              @if (answers.approvalLevels === 'multi') {
+                <label class="field">
+                  <span>¿Cómo escalamos?</span>
+                  <input [(ngModel)]="answers.escalationCriteria" placeholder="Ej: monto, urgencia, área" />
+                </label>
+              }
+            }
+          </div>
+        }
+        @case (3) {
+          <div class="space-y-4">
+            <label class="field">
+              <span>Enumera 3-5 pasos clave (separados por coma)</span>
+              <textarea [(ngModel)]="answers.mainSteps" rows="3" placeholder="Recibir, Revisar, Aprobar/Rechazar, Notificar"></textarea>
+            </label>
+            <label class="field">
+              <span>¿Qué información necesitas?</span>
+              <input [(ngModel)]="answers.requiredData" placeholder="Ej: nombre, monto, fecha, motivo" />
+            </label>
+          </div>
+        }
+        @case (4) {
+          <div class="space-y-4">
+            <label class="field">
+              <span>¿Cuándo se toma una ruta distinta?</span>
+              <input [(ngModel)]="answers.conditionalRule" placeholder="Ej: si monto > 500" />
+            </label>
+            <label class="field">
+              <span>¿Qué debe pasar en ese caso?</span>
+              <input [(ngModel)]="answers.conditionalAction" placeholder="Ej: escalar a finanzas" />
+            </label>
+          </div>
+        }
+        @case (5) {
+          <div class="space-y-4">
+            <span class="block text-sm font-semibold text-slate-700">¿Qué herramientas quieres integrar?</span>
+            <div class="chips">
+              @for (integration of ['CRM', 'ERP', 'Email', 'Slack', 'Sheets']; track integration) {
+                <button type="button" (click)="toggleIntegration(integration)" [class.active]="answers.integrations.includes(integration)">{{ integration }}</button>
+              }
+            </div>
+            <label class="field">
+              <span>¿Qué acción haremos en esas herramientas?</span>
+              <input [(ngModel)]="answers.integrationActions" placeholder="Ej: crear registro y avisar" />
+            </label>
+          </div>
+        }
+        @case (6) {
+          <div class="space-y-4">
+            <label class="field">
+              <span>¿Cómo sabrás que salió bien?</span>
+              <input [(ngModel)]="answers.kpi" placeholder="Ej: tiempo medio de aprobación" />
+            </label>
+            <label class="field">
+              <span>¿A quién notificamos al finalizar?</span>
+              <input [(ngModel)]="answers.notifyAudience" placeholder="Ej: solicitante y líder" />
+            </label>
+            <label class="check">
+              <input type="checkbox" [(ngModel)]="answers.sensitiveProcess" />
+              <span>Incluye datos sensibles (finanzas o datos personales)</span>
+            </label>
+          </div>
+        }
+        @case (7) {
+          <div class="space-y-4">
+            <label class="field">
+              <span>¿Cómo quieres empezar?</span>
+              <select [(ngModel)]="answers.mode">
+                <option value="recommended">Configuración recomendada (rápido)</option>
+                <option value="advanced">Personalización avanzada</option>
+              </select>
+            </label>
+            <div class="rounded-xl bg-indigo-50 border border-indigo-100 p-4 text-sm text-indigo-900">
+              Antes de finalizar, revisa el preview de la derecha con resumen, estructura y JSON.
+            </div>
+          </div>
+        }
+      }
+
+      <div class="mt-8 flex items-center justify-between">
+        <button type="button" (click)="prev()" [disabled]="current() === 0" class="btn ghost">Anterior</button>
+        @if (current() < steps.length - 1) {
+          <button type="button" (click)="next()" [disabled]="!canContinue()" class="btn primary">Siguiente</button>
+        } @else {
+          <div class="flex gap-2">
+            <button type="button" (click)="saveDraft()" [disabled]="loading()" class="btn ghost">Guardar borrador</button>
+            <button type="button" (click)="activateWorkflow()" [disabled]="loading()" class="btn primary">Activar workflow</button>
+          </div>
+        }
+      </div>
+    </section>
+
+    <aside class="space-y-4">
+      <section class="panel">
+        <h2>Preview ejecutivo</h2>
+        <p>
+          Cuando ocurra <strong>{{ generatedSpec().workflow.trigger.type }}</strong> desde <strong>{{ generatedSpec().workflow.trigger.source || 'fuente por definir' }}</strong>,
+          se ejecutarán <strong>{{ generatedSpec().workflow.steps.length }}</strong> pasos.
+          La regla principal será <strong>{{ generatedSpec().workflow.rules[0].when }}</strong> para <strong>{{ generatedSpec().workflow.rules[0].then }}</strong>.
+        </p>
+      </section>
+
+      <section class="panel">
+        <h2>Checklist antes de finalizar</h2>
+        <ul>
+          <li [class.ok]="!!answers.goal">Nombre del objetivo definido</li>
+          <li [class.ok]="generatedSpec().workflow.steps.length > 0">Pasos creados</li>
+          <li [class.ok]="answers.integrations.length > 0">Integraciones seleccionadas</li>
+          <li [class.ok]="!!answers.notifyAudience">Notificación final definida</li>
+        </ul>
+      </section>
+
+      <section class="panel">
+        <h2>Simulación rápida</h2>
+        <p class="text-sm text-slate-600">Caso A: regla no cumple → ruta estándar.</p>
+        <p class="text-sm text-slate-600">Caso B: regla cumple → {{ answers.conditionalAction || 'ruta alternativa' }}.</p>
+      </section>
+
+      <section class="panel">
+        <h2>JSON generado</h2>
+        <pre>{{ generatedSpec() | json }}</pre>
+      </section>
+    </aside>
+  </div>
+</div>

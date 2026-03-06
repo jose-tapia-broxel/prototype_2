@@ -74,8 +74,8 @@ export class WorkflowOrchestrator {
       version: nextVersion,
       name: project.name,
       description: project.description,
-      nodes: [...project.draftPayload.nodes],
-      flows: [...project.draftPayload.flows],
+      nodes: draftDefinition.nodes,
+      flows: draftDefinition.flows,
       status: 'ACTIVE',
       createdAt: new Date().toISOString(),
       createdBy: publishedBy
@@ -88,6 +88,22 @@ export class WorkflowOrchestrator {
     await this.adapter.saveWorkflowProject(project);
 
     return newDefinition;
+  }
+
+  private buildDraftDefinition(project: WorkflowProject, createdBy: string): WorkflowDefinition {
+    return {
+      id: 'draft',
+      workflowKey: project.key,
+      version: 0,
+      name: project.name,
+      description: project.description,
+      nodes: [...project.draftPayload.nodes],
+      flows: [...project.draftPayload.flows],
+      inputSchema: undefined,
+      status: 'ACTIVE',
+      createdAt: new Date().toISOString(),
+      createdBy
+    };
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

@@ -7,6 +7,8 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { WorkflowService } from '../workflow.service';
 import { WorkflowDefinition, FieldType, FormField, WorkflowNavigation, WorkflowStep, LocalizedString, CustomFieldDefinition } from '../models/workflow.model';
 import { LanguageService } from '../language.service';
+import { UxLevelService } from './ux-level.service';
+import { NaturalLanguageWorkflowService, IntentAmbiguity } from '../nl-workflow.service';
 
 interface DraggableField {
   type: FieldType;
@@ -28,7 +30,9 @@ export class WorkflowBuilderComponent implements OnInit {
   private workflowService = inject(WorkflowService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
+  private nlWorkflowService = inject(NaturalLanguageWorkflowService);
   lang = inject(LanguageService);
+  uxLevel = inject(UxLevelService);
 
   private sanitizer = inject(DomSanitizer);
 
@@ -127,20 +131,34 @@ export class WorkflowBuilderComponent implements OnInit {
     return `M ${startX} ${startY} C ${cp1x} ${startY}, ${cp2x} ${endY}, ${endX} ${endY}`;
   });
 
-  availableFields: DraggableField[] = [];
+  private readonly simpleFieldTypes: FieldType[] = ['shortText', 'longText', 'number', 'email', 'dropdown', 'checkbox', 'message'];
+  private readonly advancedFieldTypes: FieldType[] = ['password', 'ssoLogin', 'container', 'text', 'select'];
+  allToolboxFields: DraggableField[] = [];
+
+  availableFields = computed(() => this.allToolboxFields.filter(field => {
+    if (this.uxLevel.level() === 'developer') return true;
+    if (this.uxLevel.level() === 'advanced') {
+      return this.simpleFieldTypes.includes(field.type) || this.advancedFieldTypes.includes(field.type);
+    }
+    return this.simpleFieldTypes.includes(field.type);
+  }));
   
   allFields = computed(() => {
-    const standard = this.availableFields;
+    const standard = this.availableFields();
     const custom = this.customFields().map(f => ({
       type: f.id as FieldType,
       label: f.name,
       icon: this.sanitizer.bypassSecurityTrustHtml('<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M17.25 6.75L22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3l-4.5 16.5" /></svg>'),
       isCustom: true
     }));
-    return [...standard, ...custom];
+    return this.uxLevel.canAccess('developer') ? [...standard, ...custom] : standard;
   });
 
+  showSimpleModeNotice = computed(() => this.uxLevel.isSimple() && (this.customFields().length > 0 || this.steps.some(step => !!step.stateCode || !!step.onLoadingCode || !!step.onInteractiveCode || !!step.onCompleteCode || !!step.onDestroyCode || !!step.htmlCode || !!step.cssCode)));
+
   workflowMetadata: { name: LocalizedString, description: LocalizedString } = { name: { en: '', es: '' }, description: { en: '', es: '' } };
+  naturalPrompt = '';
+  generationWarnings = signal<string[]>([]);
 
   constructor() {
     effect(() => {
@@ -151,7 +169,7 @@ export class WorkflowBuilderComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.availableFields = [
+    this.allToolboxFields = [
       { type: 'shortText', label: 'Short Text', icon: this.sanitizer.bypassSecurityTrustHtml('<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" /></svg>') },
       { type: 'longText', label: 'Long Text', icon: this.sanitizer.bypassSecurityTrustHtml('<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 010 3.75H5.625a1.875 1.875 0 010-3.75z" /></svg>') },
       { type: 'number', label: 'Number', icon: this.sanitizer.bypassSecurityTrustHtml('<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 15.75V18m-7.5-6.75h.008v.008H8.25v-.008zm0 2.25h.008v.008H8.25v-.008zm0 2.25h.008v.008H8.25v-.008zm0 2.25h.008v.008H8.25v-.008zm7.5-6.75h.008v.008h-.008v-.008zm0 2.25h.008v.008h-.008v-.008zm0 2.25h.008v.008h-.008v-.008zm0 2.25h.008v.008h-.008v-.008zM7.5 15h9a2.25 2.25 0 002.25-2.25v-9a2.25 2.25 0 00-2.25-2.25h-9A2.25 2.25 0 005.25 3.75v9a2.25 2.25 0 002.25 2.25z" /></svg>') },
@@ -337,6 +355,7 @@ export class WorkflowBuilderComponent implements OnInit {
   }
 
   onConnectorMouseDown(e: MouseEvent, stepId: string) {
+    if (!this.uxLevel.canAccess('advanced')) return;
     e.stopPropagation();
     this.isConnecting.set(true);
     this.connectingFrom.set(stepId);
@@ -454,6 +473,7 @@ export class WorkflowBuilderComponent implements OnInit {
   }
 
   createCustomField() {
+    if (!this.uxLevel.canAccess('developer')) return;
     const newField: CustomFieldDefinition = {
       id: `custom_${Date.now()}`,
       name: 'New Custom Component',
@@ -617,5 +637,36 @@ export class WorkflowBuilderComponent implements OnInit {
         this.router.navigate(['/']);
       });
     }
+  }
+
+  generateFromPrompt() {
+    if (!this.naturalPrompt.trim()) return;
+
+    const result = this.nlWorkflowService.generateFromText(this.naturalPrompt);
+    const workflow = result.workflow;
+
+    this.workflowMetadata.name = workflow.name || { en: '', es: '' };
+    this.workflowMetadata.description = workflow.description || { en: '', es: '' };
+
+    this.nameControl.setValue(this.getLocalized(this.workflowMetadata.name));
+    this.descriptionControl.setValue(this.getLocalized(this.workflowMetadata.description));
+
+    this.steps = (workflow.steps || []).map((s: WorkflowStep, i: number) => ({
+      id: s.id,
+      title: s.title,
+      fields: [...(s.layout || s.fields || [])],
+      navigation: s.navigation || {},
+      position: s.position || { x: 50 + (i * 450), y: 50 },
+      dimensions: s.dimensions || { width: 360, height: 650 },
+      stateCode: s.stateCode || '',
+      onLoadingCode: s.onLoadingCode || '',
+      onInteractiveCode: s.onInteractiveCode || '',
+      onCompleteCode: s.onCompleteCode || '',
+      onDestroyCode: s.onDestroyCode || '',
+      htmlCode: s.htmlCode || '',
+      cssCode: s.cssCode || ''
+    }));
+
+    this.generationWarnings.set(result.intent.ambiguities.map((item: IntentAmbiguity) => item.question));
   }
 }
