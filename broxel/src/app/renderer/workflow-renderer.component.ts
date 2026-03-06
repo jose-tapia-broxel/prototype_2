@@ -13,6 +13,8 @@ import { AuthService } from '../../core/auth/auth.service';
 import { TelemetryService } from '../../core/telemetry/telemetry.service';
 import { Permission } from '../../core/auth/models';
 import { HasPermissionDirective } from '../../core/auth/has-permission.directive';
+import { ExplainabilityService } from '../../core/explainability/explainability.service';
+import { ExplainabilityResult } from '../../core/explainability/models';
 
 @Component({
   selector: 'app-workflow-renderer',
@@ -33,6 +35,7 @@ export class WorkflowRendererComponent implements OnInit {
   registry = inject(PluginRegistryService);
   authService = inject(AuthService);
   telemetry = inject(TelemetryService);
+  explainability = inject(ExplainabilityService);
 
   @ViewChild('customFieldEl') set customFieldEls(elements: ElementRef[]) {
     if (elements) {
@@ -63,6 +66,16 @@ export class WorkflowRendererComponent implements OnInit {
 
   stepForm: FormGroup = this.fb.group({});
   formData: Record<string, unknown> = {};
+
+  explainabilityTarget = signal<string>('');
+  explainabilityResult = signal<ExplainabilityResult | null>(null);
+
+  availableExplainabilityTargets = computed(() => {
+    const step = this.currentStep();
+    if (!step) return [];
+    const fields = step.layout || step.fields || [];
+    return fields.map((field) => ({ id: field.id, label: this.getLocalized(field.label) || field.id }));
+  });
 
   selectedDevice = signal<string>('iphone-15');
   isLandscape = signal<boolean>(false);
@@ -220,6 +233,44 @@ export class WorkflowRendererComponent implements OnInit {
     return Math.max(600, maxY + 250); // Header + Footer + Padding
   }
 
+  isFieldVisible(fieldId: string): boolean {
+    const step = this.currentStep();
+    if (!step?.bindings) return true;
+
+    const expression = step.bindings[`visible.${fieldId}`];
+    if (!expression) return true;
+
+    return this.explainability.explain(
+      { type: 'missing_field', targetId: fieldId },
+      step,
+      { ...this.formData, ...this.stepForm?.value },
+      this.telemetry.getRecentEvents(100)
+    ).dependencyChain.some((node) => node.nodeType === 'rule' && node.evaluation === 'true');
+  }
+
+  openExplainability(targetId: string) {
+    const step = this.currentStep();
+    if (!step) return;
+
+    const snapshot = { ...this.formData, ...this.stepForm?.value };
+    const result = this.explainability.explain(
+      { type: 'missing_field', targetId },
+      step,
+      snapshot,
+      this.telemetry.getRecentEvents(150)
+    );
+
+    this.explainabilityTarget.set(targetId);
+    this.explainabilityResult.set(result);
+
+    this.telemetry.trackEvent('FIELD_INTERACTED', { explainabilityOpened: true, targetId }, step.id, targetId);
+  }
+
+  clearExplainability() {
+    this.explainabilityTarget.set('');
+    this.explainabilityResult.set(null);
+  }
+
   ngOnInit() {
     this.route.queryParamMap.subscribe(params => {
       this.isFullscreen.set(params.get('fullscreen') === 'true');
@@ -274,6 +325,7 @@ export class WorkflowRendererComponent implements OnInit {
     });
 
     this.stepForm = this.fb.group(group);
+    this.clearExplainability();
   }
 
   saveCurrentStepData() {

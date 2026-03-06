@@ -75,6 +75,47 @@
       </div>
     }
 
+    <div class="max-w-5xl mx-auto mb-6 w-full bg-white border border-slate-200 rounded-2xl p-4 shadow-sm">
+      <div class="flex flex-col md:flex-row md:items-center gap-3">
+        <div class="flex-1">
+          <p class="text-xs font-bold uppercase tracking-widest text-slate-500">Asistente de explicabilidad</p>
+          <p class="text-sm text-slate-600">Pregunta por qué un campo no aparece o por qué una regla no se activa.</p>
+        </div>
+        <div class="flex flex-1 gap-2">
+          <select #explainTarget class="flex-1 px-3 py-2 border border-slate-200 rounded-xl text-sm">
+            @for (item of availableExplainabilityTargets(); track item.id) {
+              <option [value]="item.id">{{ item.label }}</option>
+            }
+          </select>
+          <button type="button" (click)="openExplainability(explainTarget.value)" class="px-4 py-2 rounded-xl bg-indigo-600 text-white text-xs font-bold uppercase tracking-widest">Explicar</button>
+          <button type="button" (click)="clearExplainability()" class="px-4 py-2 rounded-xl border border-slate-200 text-xs font-bold uppercase tracking-widest text-slate-600">Limpiar</button>
+        </div>
+      </div>
+
+      @if (explainabilityResult()) {
+        <div class="mt-4 rounded-xl border border-indigo-100 bg-indigo-50/40 p-4 space-y-3">
+          <p class="text-sm font-semibold text-slate-900">{{ explainabilityResult()?.summary }}</p>
+          <p class="text-xs text-indigo-700 font-bold uppercase tracking-widest">Confianza: {{ explainabilityResult()?.confidenceLabel }}</p>
+          <div>
+            <p class="text-xs font-bold uppercase tracking-widest text-slate-500 mb-1">Por qué pasó</p>
+            <ul class="list-disc ml-5 text-sm text-slate-700">
+              @for (reason of explainabilityResult()?.why || []; track reason) {
+                <li>{{ reason }}</li>
+              }
+            </ul>
+          </div>
+          <div>
+            <p class="text-xs font-bold uppercase tracking-widest text-slate-500 mb-1">Qué puedes hacer ahora</p>
+            <ul class="list-disc ml-5 text-sm text-slate-700">
+              @for (action of explainabilityResult()?.nextActions || []; track action) {
+                <li>{{ action }}</li>
+              }
+            </ul>
+          </div>
+        </div>
+      }
+    </div>
+
     <!-- Device Viewport Container -->
     <div class="flex-1 flex items-center justify-center overflow-hidden w-full" [class.p-4]="!isFullscreen()" [class.md:p-8]="!isFullscreen()">
       @if (selectedDevice() === 'desktop' || isFullscreen()) {

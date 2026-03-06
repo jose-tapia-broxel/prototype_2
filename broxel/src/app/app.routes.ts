@@ -6,6 +6,7 @@ import {BusinessInsightsComponent} from './business-insights/business-insights.c
 
 export const routes: Routes = [
   { path: '', component: DashboardComponent },
+  { path: 'wizard/new', component: WorkflowWizardComponent },
   { path: 'builder/:id', component: WorkflowBuilderComponent },
   { path: 'run/:id', component: WorkflowRendererComponent },
   { path: 'insights', component: BusinessInsightsComponent },
