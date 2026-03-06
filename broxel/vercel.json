@@ -3,6 +3,14 @@
   "installCommand": "npm install",
   "buildCommand": "npm run build",
   "outputDirectory": "dist/app/browser",
+  "functions": {
+    "api/render.ts": {
+      "runtime": "@vercel/node@3.2.0",
+      "memory": 1024,
+      "maxDuration": 30,
+      "includeFiles": "dist/app/server/**"
+    }
+  },
   "rewrites": [
     {
       "source": "/(.*)",
