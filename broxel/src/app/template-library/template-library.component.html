@@ -1,0 +1,130 @@
+<div class="max-w-7xl mx-auto w-full px-6 py-8">
+  <div class="mb-8">
+    <h1 class="text-3xl font-bold text-slate-900">Template Library</h1>
+    <p class="text-slate-600 mt-2">Elimina el lienzo en blanco con templates listos para lanzar en menos de 5 minutos.</p>
+  </div>
+
+  <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+    <div class="flex items-center gap-3 mb-6 text-sm font-semibold text-slate-500">
+      <span [class.active-step]="step() >= 1" class="wizard-step">1. Objetivo</span>
+      <span [class.active-step]="step() >= 2" class="wizard-step">2. Contexto</span>
+      <span [class.active-step]="step() >= 3" class="wizard-step">3. Personalizar</span>
+      <span [class.active-step]="step() >= 4" class="wizard-step">4. Validar y lanzar</span>
+    </div>
+
+    @if (step() === 1) {
+      <section>
+        <h2 class="text-xl font-bold mb-2">¿Qué quieres lograr?</h2>
+        <p class="text-slate-500 mb-5">Selecciona una categoría de negocio y usa un template recomendado.</p>
+        <div class="flex flex-wrap gap-2 mb-6">
+          @for (category of categories; track category) {
+            <button (click)="setCategory(category)" class="pill" [class.pill-active]="selectedCategory() === category">{{ category }}</button>
+          }
+        </div>
+
+        <div class="grid md:grid-cols-3 gap-4">
+          @for (template of filteredTemplates(); track template.id) {
+            <article class="border border-slate-200 rounded-xl p-4 hover:border-indigo-300 transition-colors">
+              <p class="text-xs font-semibold text-indigo-600">{{ template.category }}</p>
+              <h3 class="text-base font-bold mt-1">{{ template.name }}</h3>
+              <p class="text-sm text-slate-500 mt-2 min-h-12">{{ template.outcome }}</p>
+              <p class="text-xs mt-3 text-slate-500">⚡ {{ template.setupMinutes }} min · {{ template.difficulty }}</p>
+              <button (click)="chooseTemplate(template)" class="mt-4 w-full bg-slate-900 text-white py-2 rounded-lg text-sm font-semibold hover:bg-indigo-600 transition-colors">Usar template</button>
+            </article>
+          }
+        </div>
+      </section>
+    }
+
+    @if (step() === 2 && selectedTemplate(); as template) {
+      <section>
+        <h2 class="text-xl font-bold">Contexto de negocio</h2>
+        <p class="text-slate-500 mt-1 mb-4">Template seleccionado: <strong>{{ template.name }}</strong>.</p>
+
+        <div class="grid md:grid-cols-3 gap-4">
+          <label class="field-label">Tipo de negocio
+            <input type="text" class="field-input" placeholder="Ej. SaaS B2B" (input)="updateContext('businessType', $any($event.target).value)">
+          </label>
+          <label class="field-label">Audiencia principal
+            <input type="text" class="field-input" placeholder="Ej. Leads enterprise" (input)="updateContext('audience', $any($event.target).value)">
+          </label>
+          <label class="field-label">Canal principal
+            <input type="text" class="field-input" placeholder="Ej. Email" (input)="updateContext('channel', $any($event.target).value)">
+          </label>
+        </div>
+
+        <div class="mt-6 flex justify-between">
+          <button (click)="prevStep()" class="ghost-btn">Atrás</button>
+          <button (click)="nextStep()" [disabled]="!canContinueFromContext()" class="primary-btn">Continuar</button>
+        </div>
+      </section>
+    }
+
+    @if (step() === 3 && selectedTemplate(); as template) {
+      <section>
+        <h2 class="text-xl font-bold">Personalización mínima viable</h2>
+        <p class="text-slate-500 mt-1 mb-4">Edita solo lo esencial para lanzar rápido.</p>
+
+        <div class="grid md:grid-cols-2 gap-4">
+          @for (field of template.variables; track field.id) {
+            <label class="field-label">{{ field.label }}
+              @if (field.type === 'textarea') {
+                <textarea class="field-input min-h-24" [value]="getFieldValue(field)" (input)="updateField(field.id, $any($event.target).value)"></textarea>
+              } @else if (field.type === 'select') {
+                <select class="field-input" [value]="getFieldValue(field)" (change)="updateField(field.id, $any($event.target).value)">
+                  @for (option of field.options || []; track option) {
+                    <option [value]="option">{{ option }}</option>
+                  }
+                </select>
+              } @else {
+                <input [type]="field.type === 'number' ? 'number' : 'text'" class="field-input" [value]="getFieldValue(field)" (input)="updateField(field.id, $any($event.target).value)">
+              }
+            </label>
+          }
+        </div>
+
+        <div class="mt-6 flex justify-between">
+          <button (click)="prevStep()" class="ghost-btn">Atrás</button>
+          <button (click)="nextStep()" class="primary-btn">Revisar</button>
+        </div>
+      </section>
+    }
+
+    @if (step() === 4 && selectedTemplate(); as template) {
+      <section>
+        <h2 class="text-xl font-bold">Validación final</h2>
+        <div class="grid md:grid-cols-2 gap-4 mt-4">
+          <div class="review-card">
+            <h3 class="font-semibold">Checklist</h3>
+            <ul class="text-sm text-slate-600 mt-2 space-y-1">
+              <li>✅ Resultado esperado: {{ template.outcome }}</li>
+              <li>✅ Benchmark: {{ template.benchmark }}</li>
+              <li>✅ Guardrail: Core base protegido + edición guiada</li>
+              <li>✅ KPIs sugeridos: {{ template.kpis.join(', ') }}</li>
+            </ul>
+          </div>
+          <div class="review-card">
+            <h3 class="font-semibold">Vista previa</h3>
+            <p class="text-sm text-slate-600 mt-2">{{ template.problem }}</p>
+            <p class="text-sm text-slate-600 mt-2">Uso recomendado: {{ template.useWhen }}</p>
+            <p class="text-sm text-slate-600 mt-2">Tip: {{ template.optimizationTip }}</p>
+          </div>
+        </div>
+
+        <div class="mt-6 flex justify-between items-center">
+          <button (click)="prevStep()" class="ghost-btn">Atrás</button>
+          <button (click)="launchTemplate()" [disabled]="!canLaunch()" class="primary-btn">Activar flujo</button>
+        </div>
+
+        @if (launchMessage()) {
+          <p class="text-sm text-emerald-600 mt-4">{{ launchMessage() }}</p>
+        }
+      </section>
+    }
+  </div>
+
+  <div class="mt-6 text-sm text-slate-500">
+    ¿Prefieres construir manualmente?
+    <a routerLink="/builder/new" class="text-indigo-600 font-semibold hover:underline">Ir al Workflow Builder</a>
+  </div>
+</div>
