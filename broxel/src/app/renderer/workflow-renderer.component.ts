@@ -80,6 +80,7 @@ export class WorkflowRendererComponent implements OnInit {
   selectedDevice = signal<string>('iphone-15');
   isLandscape = signal<boolean>(false);
   isFullscreen = signal<boolean>(false);
+  unsandboxMode = signal<boolean>(false);
   viewportWidth = signal<number>(isPlatformBrowser(this.platformId) ? window.innerWidth : 1024);
   viewportHeight = signal<number>(isPlatformBrowser(this.platformId) ? window.innerHeight : 768);
 
@@ -202,6 +203,16 @@ export class WorkflowRendererComponent implements OnInit {
     return this.sanitizer.bypassSecurityTrustHtml(css || '');
   }
 
+  getUnsandboxedStepHtml(): SafeHtml {
+    const step = this.currentStep();
+    if (!step?.htmlCode) return this.sanitizer.bypassSecurityTrustHtml('');
+    return this.sanitizer.bypassSecurityTrustHtml(step.htmlCode);
+  }
+
+  getUnsandboxedCustomHtml(field: FormField): SafeHtml {
+    return this.sanitizer.bypassSecurityTrustHtml(field.config?.html || '');
+  }
+
   executeCode(code: string | undefined) {
     if (!code) return;
     try {
@@ -274,14 +285,25 @@ export class WorkflowRendererComponent implements OnInit {
   ngOnInit() {
     this.route.queryParamMap.subscribe(params => {
       this.isFullscreen.set(params.get('fullscreen') === 'true');
+      this.unsandboxMode.set(params.get('unsandbox') === 'true');
       if (this.isFullscreen()) {
         this.selectedDevice.set('desktop');
+      }
+
+      const draftKey = params.get('draft');
+      if (draftKey && isPlatformBrowser(this.platformId)) {
+        const rawDraft = localStorage.getItem(draftKey);
+        if (rawDraft) {
+          this.workflow.set(JSON.parse(rawDraft) as WorkflowDefinition);
+          this.buildFormForCurrentStep();
+          return;
+        }
       }
     });
 
     this.route.paramMap.subscribe(params => {
       const id = params.get('id');
-      if (id) {
+      if (id && id !== 'preview') {
         this.loadWorkflow(id);
       }
     });

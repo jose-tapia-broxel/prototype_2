@@ -74,6 +74,12 @@ export class WorkflowBuilderComponent implements OnInit {
   customFields = signal<CustomFieldDefinition[]>([]);
   editingCustomField = signal<CustomFieldDefinition | null>(null);
   activeCustomFieldTab = signal<'html' | 'css' | 'js'>('html');
+  htmlTheme = signal<'night' | 'light' | 'ocean'>('night');
+  cssTheme = signal<'night' | 'light' | 'sunset'>('night');
+  jsTheme = signal<'night' | 'light' | 'matrix'>('night');
+
+  showToolboxSidebar = signal(true);
+  showPropertiesSidebar = signal(true);
 
   draggingField = signal<{ field: FormField, step: WorkflowStep } | null>(null);
   resizingField = signal<{ field: FormField, step: WorkflowStep } | null>(null);
@@ -604,28 +610,7 @@ export class WorkflowBuilderComponent implements OnInit {
   saveWorkflow() {
     if (this.nameControl.invalid || this.steps.length === 0) return;
 
-    const workflowData: Partial<WorkflowDefinition> = {
-      name: this.workflowMetadata.name,
-      description: this.workflowMetadata.description,
-      category: this.categoryControl.value || '',
-      customToolbox: this.customFields(),
-      steps: this.steps.map(s => ({
-        id: s.id,
-        title: s.title,
-        layout: s.fields,
-        fields: s.fields,
-        navigation: s.navigation,
-        position: s.position,
-        dimensions: s.dimensions,
-        stateCode: s.stateCode,
-        onLoadingCode: s.onLoadingCode,
-        onInteractiveCode: s.onInteractiveCode,
-        onCompleteCode: s.onCompleteCode,
-        onDestroyCode: s.onDestroyCode,
-        htmlCode: s.htmlCode,
-        cssCode: s.cssCode
-      }))
-    };
+    const workflowData = this.buildWorkflowPayload();
 
     const id = this.workflowId();
     if (id && id !== 'new') {
@@ -668,5 +653,58 @@ export class WorkflowBuilderComponent implements OnInit {
     }));
 
     this.generationWarnings.set(result.intent.ambiguities.map((item: IntentAmbiguity) => item.question));
+  }
+
+  getEditorThemeClasses(kind: 'html' | 'css' | 'js'): string {
+    const selectedTheme = kind === 'html' ? this.htmlTheme() : kind === 'css' ? this.cssTheme() : this.jsTheme();
+
+    if (kind === 'html') {
+      if (selectedTheme === 'light') return 'bg-slate-100 text-slate-800';
+      if (selectedTheme === 'ocean') return 'bg-sky-950 text-cyan-200';
+      return 'bg-slate-950 text-indigo-300';
+    }
+
+    if (kind === 'css') {
+      if (selectedTheme === 'light') return 'bg-zinc-100 text-zinc-800';
+      if (selectedTheme === 'sunset') return 'bg-rose-950 text-rose-200';
+      return 'bg-slate-950 text-pink-300';
+    }
+
+    if (selectedTheme === 'light') return 'bg-neutral-100 text-neutral-800';
+    if (selectedTheme === 'matrix') return 'bg-black text-emerald-400';
+    return 'bg-slate-950 text-emerald-400';
+  }
+
+  openLivePreview() {
+    if (!isPlatformBrowser(this.platformId)) return;
+    const draftKey = `builder-preview-${Date.now()}`;
+    const workflowData = this.buildWorkflowPayload();
+    localStorage.setItem(draftKey, JSON.stringify(workflowData));
+    window.open(`/run/preview?draft=${encodeURIComponent(draftKey)}&fullscreen=true&unsandbox=true`, '_blank');
+  }
+
+  private buildWorkflowPayload(): Partial<WorkflowDefinition> {
+    return {
+      name: this.workflowMetadata.name,
+      description: this.workflowMetadata.description,
+      category: this.categoryControl.value || '',
+      customToolbox: this.customFields(),
+      steps: this.steps.map(s => ({
+        id: s.id,
+        title: s.title,
+        layout: s.fields,
+        fields: s.fields,
+        navigation: s.navigation,
+        position: s.position,
+        dimensions: s.dimensions,
+        stateCode: s.stateCode,
+        onLoadingCode: s.onLoadingCode,
+        onInteractiveCode: s.onInteractiveCode,
+        onCompleteCode: s.onCompleteCode,
+        onDestroyCode: s.onDestroyCode,
+        htmlCode: s.htmlCode,
+        cssCode: s.cssCode
+      }))
+    };
   }
 }

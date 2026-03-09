@@ -40,6 +40,12 @@
             <label for="workflow-name" class="sr-only">Workflow Name</label>
             <input id="workflow-name" type="text" [formControl]="nameControl" (input)="setLocalized(workflowMetadata, 'name', nameControl.value || '')" class="px-3 py-1.5 border border-slate-300 rounded-md text-sm focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="Process Name">
           </div>
+          <button (click)="showToolboxSidebar.set(!showToolboxSidebar())" class="bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 px-3 py-2 rounded-md text-xs font-medium transition-colors shadow-sm">{{ showToolboxSidebar() ? 'Hide Toolbox' : 'Show Toolbox' }}</button>
+          <button (click)="showPropertiesSidebar.set(!showPropertiesSidebar())" class="bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 px-3 py-2 rounded-md text-xs font-medium transition-colors shadow-sm">{{ showPropertiesSidebar() ? 'Hide Properties' : 'Show Properties' }}</button>
+          <button (click)="openLivePreview()" class="bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 px-4 py-2 rounded-md text-sm font-medium transition-colors shadow-sm flex items-center gap-2" title="Open current builder workflow in fullscreen">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3.75h6v6m10.5-6h-6v6m-10.5 10.5h6v-6m10.5 6h-6v-6" /></svg>
+            Live Preview
+          </button>
           @if (!isNew()) {
             <a [href]="'/run/' + workflowId()" target="_blank" class="bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 px-4 py-2 rounded-md text-sm font-medium transition-colors shadow-sm flex items-center gap-2" title="Open process in new tab">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" /></svg>
@@ -77,6 +83,7 @@
 
       <div class="flex flex-1 overflow-hidden">
         <!-- Sidebar: Toolbox -->
+        @if (showToolboxSidebar()) {
         <div class="w-64 bg-white border-r border-slate-200 flex flex-col shrink-0">
           <div class="flex-1 flex flex-col overflow-hidden">
             <div class="p-4 border-b border-slate-100 flex items-center justify-between">
@@ -145,6 +152,7 @@
             </div>
           }
         </div>
+        }
 
         <!-- Custom Field Editor Overlay -->
         @if (editingCustomField() && uxLevel.canAccess('developer')) {
@@ -180,17 +188,17 @@
             <div class="flex-1 relative">
               @if (activeCustomFieldTab() === 'html') {
                 <textarea [(ngModel)]="editingCustomField()!.html" 
-                          class="absolute inset-0 w-full h-full bg-slate-950 text-indigo-300 font-mono text-sm p-8 border-none focus:ring-0 outline-none resize-none leading-relaxed"
+                          class="absolute inset-0 w-full h-full font-mono text-sm p-8 border-none focus:ring-0 outline-none resize-none leading-relaxed" [ngClass]="getEditorThemeClasses('html')"
                           spellcheck="false"
                           placeholder="<!-- Enter custom HTML for this component... -->"></textarea>
               } @else if (activeCustomFieldTab() === 'css') {
                 <textarea [(ngModel)]="editingCustomField()!.css" 
-                          class="absolute inset-0 w-full h-full bg-slate-950 text-pink-300 font-mono text-sm p-8 border-none focus:ring-0 outline-none resize-none leading-relaxed"
+                          class="absolute inset-0 w-full h-full font-mono text-sm p-8 border-none focus:ring-0 outline-none resize-none leading-relaxed" [ngClass]="getEditorThemeClasses('css')"
                           spellcheck="false"
                           placeholder="/* Enter custom CSS for this component... */"></textarea>
               } @else {
                 <textarea [(ngModel)]="editingCustomField()!.js" 
-                          class="absolute inset-0 w-full h-full bg-slate-950 text-emerald-400 font-mono text-sm p-8 border-none focus:ring-0 outline-none resize-none leading-relaxed"
+                          class="absolute inset-0 w-full h-full font-mono text-sm p-8 border-none focus:ring-0 outline-none resize-none leading-relaxed" [ngClass]="getEditorThemeClasses('js')"
                           spellcheck="false"
                           placeholder="// Enter custom JavaScript for this component..."></textarea>
               }
@@ -310,6 +318,24 @@
                           <div class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
                           <span class="text-xs font-bold text-slate-400 uppercase tracking-widest">Screen Logic</span>
                         </div>
+                        <div class="flex items-center gap-3">
+                          <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Themes</span>
+                          <select [value]="htmlTheme()" (change)="htmlTheme.set($any($event.target).value)" class="bg-slate-800 text-slate-200 text-[10px] rounded px-2 py-1">
+                            <option value="night">HTML Night</option>
+                            <option value="light">HTML Light</option>
+                            <option value="ocean">HTML Ocean</option>
+                          </select>
+                          <select [value]="cssTheme()" (change)="cssTheme.set($any($event.target).value)" class="bg-slate-800 text-slate-200 text-[10px] rounded px-2 py-1">
+                            <option value="night">CSS Night</option>
+                            <option value="light">CSS Light</option>
+                            <option value="sunset">CSS Sunset</option>
+                          </select>
+                          <select [value]="jsTheme()" (change)="jsTheme.set($any($event.target).value)" class="bg-slate-800 text-slate-200 text-[10px] rounded px-2 py-1">
+                            <option value="night">JS/TS Night</option>
+                            <option value="light">JS/TS Light</option>
+                            <option value="matrix">JS/TS Matrix</option>
+                          </select>
+                        </div>
                         <div class="flex bg-slate-800 p-1 rounded-lg">
                           <button (click)="activeCodeTab.set('html')" 
                                   [class.bg-slate-700]="activeCodeTab() === 'html'"
@@ -344,32 +370,32 @@
                     <div class="flex-1 relative">
                       @if (activeCodeTab() === 'html') {
                         <textarea [(ngModel)]="step.htmlCode" 
-                                  class="absolute inset-0 w-full h-full bg-slate-950 text-indigo-300 font-mono text-sm p-6 border-none focus:ring-0 outline-none resize-none leading-relaxed"
+                                  class="absolute inset-0 w-full h-full font-mono text-sm p-6 border-none focus:ring-0 outline-none resize-none leading-relaxed" [ngClass]="getEditorThemeClasses('html')"
                                   spellcheck="false"
                                   placeholder="<!-- Enter custom HTML for this screen... -->"></textarea>
                       } @else if (activeCodeTab() === 'css') {
                         <textarea [(ngModel)]="step.cssCode" 
-                                  class="absolute inset-0 w-full h-full bg-slate-950 text-pink-300 font-mono text-sm p-6 border-none focus:ring-0 outline-none resize-none leading-relaxed"
+                                  class="absolute inset-0 w-full h-full font-mono text-sm p-6 border-none focus:ring-0 outline-none resize-none leading-relaxed" [ngClass]="getEditorThemeClasses('css')"
                                   spellcheck="false"
                                   placeholder="/* Enter custom CSS for this screen... */"></textarea>
                       } @else if (activeCodeTab() === 'loading') {
                         <textarea [(ngModel)]="step.onLoadingCode" 
-                                  class="absolute inset-0 w-full h-full bg-slate-950 text-emerald-400 font-mono text-sm p-6 border-none focus:ring-0 outline-none resize-none leading-relaxed"
+                                  class="absolute inset-0 w-full h-full font-mono text-sm p-6 border-none focus:ring-0 outline-none resize-none leading-relaxed" [ngClass]="getEditorThemeClasses('js')"
                                   spellcheck="false"
                                   placeholder="// Code to run when document.readyState is 'loading'..."></textarea>
                       } @else if (activeCodeTab() === 'interactive') {
                         <textarea [(ngModel)]="step.onInteractiveCode" 
-                                  class="absolute inset-0 w-full h-full bg-slate-950 text-emerald-400 font-mono text-sm p-6 border-none focus:ring-0 outline-none resize-none leading-relaxed"
+                                  class="absolute inset-0 w-full h-full font-mono text-sm p-6 border-none focus:ring-0 outline-none resize-none leading-relaxed" [ngClass]="getEditorThemeClasses('js')"
                                   spellcheck="false"
                                   placeholder="// Code to run when document.readyState is 'interactive'..."></textarea>
                       } @else if (activeCodeTab() === 'complete') {
                         <textarea [(ngModel)]="step.onCompleteCode" 
-                                  class="absolute inset-0 w-full h-full bg-slate-950 text-emerald-400 font-mono text-sm p-6 border-none focus:ring-0 outline-none resize-none leading-relaxed"
+                                  class="absolute inset-0 w-full h-full font-mono text-sm p-6 border-none focus:ring-0 outline-none resize-none leading-relaxed" [ngClass]="getEditorThemeClasses('js')"
                                   spellcheck="false"
                                   placeholder="// Code to run when document.readyState is 'complete'..."></textarea>
                       } @else if (activeCodeTab() === 'onDestroy') {
                         <textarea [(ngModel)]="step.onDestroyCode" 
-                                  class="absolute inset-0 w-full h-full bg-slate-950 text-emerald-400 font-mono text-sm p-6 border-none focus:ring-0 outline-none resize-none leading-relaxed"
+                                  class="absolute inset-0 w-full h-full font-mono text-sm p-6 border-none focus:ring-0 outline-none resize-none leading-relaxed" [ngClass]="getEditorThemeClasses('js')"
                                   spellcheck="false"
                                   placeholder="// Code to run when leaving screen (onDestroy)..."></textarea>
                       }
@@ -411,6 +437,11 @@
                       </div>
                     }
 
+                    <div class="px-6 pt-2 pb-1 text-[10px] text-slate-500 flex items-center gap-2">
+                      <span class="font-semibold uppercase tracking-wider">Dynamic Layout</span>
+                      <button (click)="$event.stopPropagation()" class="px-2 py-0.5 rounded bg-white border border-slate-200">Drag fields</button>
+                      <button (click)="$event.stopPropagation()" class="px-2 py-0.5 rounded bg-white border border-slate-200">Resize fields</button>
+                    </div>
                     <div class="relative w-full" [style.height.px]="getStepContentHeight(step)">
                       @for (field of step.fields; track field.id; let fieldIndex = $index) {
                         <div cdkDrag 
@@ -570,6 +601,7 @@
         </div>
         
         <!-- Properties Panel (Right Sidebar) -->
+        @if (showPropertiesSidebar()) {
         <div class="w-72 bg-white border-l border-slate-200 flex flex-col shrink-0 overflow-y-auto">
           @if (selectedField()) {
             <div class="p-4 border-b border-slate-100 flex items-center justify-between bg-indigo-50">
@@ -650,5 +682,6 @@
             </div>
           }
         </div>
+        }
       </div>
     </div>
