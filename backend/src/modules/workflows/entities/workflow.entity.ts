@@ -3,14 +3,14 @@ import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 @Entity('workflows')
 export class Workflow {
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+  id!: string;
 
   @Column({ name: 'application_version_id', type: 'uuid' })
-  applicationVersionId: string;
+  applicationVersionId!: string;
 
   @Column({ name: 'workflow_key' })
-  workflowKey: string;
+  workflowKey!: string;
 
   @Column()
-  name: string;
+  name!: string;
 }

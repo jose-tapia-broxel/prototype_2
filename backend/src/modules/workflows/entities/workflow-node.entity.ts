@@ -3,16 +3,16 @@ import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 @Entity('workflow_nodes')
 export class WorkflowNode {
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+  id!: string;
 
   @Column({ name: 'workflow_id', type: 'uuid' })
-  workflowId: string;
+  workflowId!: string;
 
   @Column({ name: 'node_key' })
-  nodeKey: string;
+  nodeKey!: string;
 
   @Column({ name: 'node_type' })
-  nodeType: 'start' | 'task' | 'decision' | 'integration' | 'end';
+  nodeType!: 'start' | 'task' | 'decision' | 'integration' | 'end';
 
   @Column({ name: 'config_json', type: 'jsonb', nullable: true })
   configJson?: Record<string, unknown>;

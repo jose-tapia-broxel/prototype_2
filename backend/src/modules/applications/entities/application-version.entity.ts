@@ -4,29 +4,29 @@ import { Column, Entity, Index, PrimaryGeneratedColumn } from 'typeorm';
 @Index(['applicationId', 'versionNumber'], { unique: true })
 export class ApplicationVersion {
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+  id!: string;
 
   @Column({ name: 'application_id', type: 'uuid' })
-  applicationId: string;
+  applicationId!: string;
 
   @Column({ name: 'organization_id', type: 'uuid' })
-  organizationId: string;
+  organizationId!: string;
 
   @Column({ name: 'version_number', type: 'int' })
-  versionNumber: number;
+  versionNumber!: number;
 
   @Column({ name: 'status', type: 'varchar', default: 'DRAFT' })
-  status: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED';
+  status!: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED';
 
   @Column({ name: 'definition_json', type: 'jsonb' })
-  definitionJson: Record<string, unknown>;
+  definitionJson!: Record<string, unknown>;
 
   @Column({ name: 'definition_hash', type: 'varchar', length: 128 })
-  definitionHash: string;
+  definitionHash!: string;
 
   @Column({ name: 'published_at', type: 'timestamptz', nullable: true })
   publishedAt?: Date;
 
   @Column({ name: 'created_by', type: 'uuid' })
-  createdBy: string;
+  createdBy!: string;
 }

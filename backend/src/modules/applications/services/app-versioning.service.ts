@@ -15,7 +15,7 @@ export class AppVersioningService {
     private readonly versionsRepo: Repository<ApplicationVersion>,
     private readonly validation: AppValidationService,
     private readonly domainEvents: DomainEventsService,
-  ) {}
+  ) { }
 
   async createDraftVersion(app: Application, dto: CreateVersionDto): Promise<ApplicationVersion> {
     const latest = await this.versionsRepo.findOne({
@@ -24,7 +24,9 @@ export class AppVersioningService {
     });
 
     const versionNumber = (latest?.versionNumber ?? 0) + 1;
-    const definitionHash = createHash('sha256').update(JSON.stringify(dto.definitionJson)).digest('hex');
+    const definitionHash = createHash('sha256')
+      .update(JSON.stringify(dto.definitionJson))
+      .digest('hex');
 
     const version = this.versionsRepo.create({
       applicationId: app.id,
