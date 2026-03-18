@@ -52,9 +52,44 @@
               Preview
             </a>
           }
-          <button (click)="saveWorkflow()" [disabled]="nameControl.invalid || steps.length === 0" class="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-white px-4 py-2 rounded-md text-sm font-medium transition-colors shadow-sm flex items-center gap-2">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" /></svg>
-            Publish
+          <!-- Version Status Indicator -->
+          @if (lastSavedAt()) {
+            <span class="text-xs text-slate-400 flex items-center gap-1">
+              @if (versionStatus() === 'draft') {
+                <span class="w-2 h-2 bg-yellow-400 rounded-full"></span>
+              } @else if (versionStatus() === 'published') {
+                <span class="w-2 h-2 bg-green-400 rounded-full"></span>
+              }
+              {{ getLastSavedText() }}
+            </span>
+          }
+          <!-- Save as Draft Button -->
+          <button (click)="saveDraft()" 
+                  [disabled]="nameControl.invalid || steps.length === 0 || isSaving()"
+                  class="bg-white border border-slate-300 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed text-slate-700 px-4 py-2 rounded-md text-sm font-medium transition-colors shadow-sm flex items-center gap-2">
+            @if (isSaving()) {
+              <svg class="animate-spin w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+            } @else {
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0z" /></svg>
+            }
+            {{ lang.currentLang() === 'es' ? 'Guardar Borrador' : 'Save Draft' }}
+          </button>
+          <!-- Publish Button -->
+          <button (click)="publishVersion()" 
+                  [disabled]="nameControl.invalid || steps.length === 0 || isPublishing()" 
+                  class="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-white px-4 py-2 rounded-md text-sm font-medium transition-colors shadow-sm flex items-center gap-2">
+            @if (isPublishing()) {
+              <svg class="animate-spin w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+            } @else {
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" /></svg>
+            }
+            {{ lang.currentLang() === 'es' ? 'Publicar' : 'Publish' }}
           </button>
         </div>
       </div>

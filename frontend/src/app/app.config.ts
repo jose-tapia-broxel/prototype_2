@@ -8,6 +8,8 @@ import {provideHttpClient, withFetch, withInterceptors} from '@angular/common/ht
 
 import {routes} from './app.routes';
 import {mockBackendInterceptor} from './mock-backend.interceptor';
+import {orgIdInterceptor} from './core/interceptors/org-id.interceptor';
+import {errorHandlingInterceptor} from './core/interceptors/error-handling.interceptor';
 import { PluginRegistryService } from '../core/plugins/registry.service';
 import { ShortTextPluginComponent } from './plugins/short-text.plugin';
 
@@ -30,7 +32,14 @@ export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
     provideRouter(routes),
-    provideHttpClient(withFetch(), withInterceptors([mockBackendInterceptor])),
+    provideHttpClient(
+      withFetch(), 
+      withInterceptors([
+        orgIdInterceptor,
+        errorHandlingInterceptor,
+        mockBackendInterceptor
+      ])
+    ),
     {
       provide: APP_INITIALIZER,
       useFactory: initializePlugins,

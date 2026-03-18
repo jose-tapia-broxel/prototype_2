@@ -129,6 +129,209 @@ export const mockBackendInterceptor: HttpInterceptorFn = (req: HttpRequest<unkno
         return;
       }
 
+      // GET /api/workflows/:id/fork
+      if (url.match(/\/api\/workflows\/[^/]+\/fork$/) && method === 'POST') {
+        const parts = url.split('/');
+        const workflowId = parts[parts.length - 2];
+        const original = workflows.find(w => w.id === workflowId);
+        if (original) {
+          const forked = { 
+            ...original, 
+            id: Date.now().toString(),
+            name: typeof original.name === 'string' ? `${original.name} (Copy)` : { 
+              en: `${(original.name as Record<string, string>).en || ''} (Copy)`,
+              es: `${(original.name as Record<string, string>).es || ''} (Copia)`
+            }
+          };
+          workflows.push(forked);
+          observer.next(new HttpResponse({ status: 201, body: forked }));
+        } else {
+          observer.error(new HttpErrorResponse({ status: 404, statusText: 'Not Found', url }));
+        }
+        observer.complete();
+        return;
+      }
+
+      // ============================================================================
+      // Applications API (Phase 5)
+      // ============================================================================
+
+      // GET /api/applications
+      if (url.endsWith('/api/applications') && method === 'GET') {
+        const mockApps = [
+          { id: 'app_1', organizationId: 'org_1', appKey: 'onboarding', name: 'Employee Onboarding', currentPublishedVersionId: 'ver_1' },
+          { id: 'app_2', organizationId: 'org_1', appKey: 'feedback', name: 'Customer Feedback', currentPublishedVersionId: null },
+          { id: 'app_3', organizationId: 'org_1', appKey: 'expense', name: 'Expense Approval', currentPublishedVersionId: 'ver_3' }
+        ];
+        observer.next(new HttpResponse({ 
+          status: 200, 
+          body: { data: mockApps, total: mockApps.length, page: 1, pageSize: 10, totalPages: 1 } 
+        }));
+        observer.complete();
+        return;
+      }
+
+      // ============================================================================
+      // Workflow Instances API (Phase 5)
+      // ============================================================================
+
+      // GET /api/runtime/instances
+      if (url.match(/\/api\/runtime\/instances(\?.*)?$/) && method === 'GET') {
+        const mockInstances = [
+          {
+            id: 'inst_1',
+            organizationId: 'org_1',
+            applicationId: 'app_1',
+            applicationVersionId: 'ver_1',
+            workflowId: 'wf_1',
+            currentNodeId: 'node_2',
+            status: 'running',
+            contextJson: { userId: 'user_123', step: 2 },
+            startedAt: new Date(Date.now() - 3600000).toISOString(),
+            updatedAt: new Date().toISOString(),
+            workflowName: 'Employee Onboarding',
+            applicationName: 'HR System'
+          },
+          {
+            id: 'inst_2',
+            organizationId: 'org_1',
+            applicationId: 'app_2',
+            applicationVersionId: 'ver_1',
+            workflowId: 'wf_2',
+            currentNodeId: null,
+            status: 'completed',
+            contextJson: {},
+            startedAt: new Date(Date.now() - 86400000).toISOString(),
+            endedAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            workflowName: 'Customer Feedback',
+            applicationName: 'CRM'
+          },
+          {
+            id: 'inst_3',
+            organizationId: 'org_1',
+            applicationId: 'app_3',
+            applicationVersionId: 'ver_1',
+            workflowId: 'wf_3',
+            currentNodeId: 'node_1',
+            status: 'pending',
+            contextJson: {},
+            startedAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            workflowName: 'Expense Approval',
+            applicationName: 'Finance'
+          }
+        ];
+        observer.next(new HttpResponse({ 
+          status: 200, 
+          body: { data: mockInstances, total: mockInstances.length, page: 1, pageSize: 10, totalPages: 1 } 
+        }));
+        observer.complete();
+        return;
+      }
+
+      // GET /api/runtime/instances/:id
+      if (url.match(/\/api\/runtime\/instances\/[^/]+$/) && method === 'GET') {
+        const id = url.split('/').pop();
+        observer.next(new HttpResponse({ 
+          status: 200, 
+          body: {
+            id,
+            organizationId: 'org_1',
+            applicationId: 'app_1',
+            applicationVersionId: 'ver_1',
+            workflowId: 'wf_1',
+            currentNodeId: 'node_2',
+            status: 'running',
+            contextJson: { userId: 'user_123', step: 2 },
+            startedAt: new Date(Date.now() - 3600000).toISOString(),
+            updatedAt: new Date().toISOString(),
+            workflowName: 'Employee Onboarding',
+            currentNodeLabel: 'Equipment Request'
+          }
+        }));
+        observer.complete();
+        return;
+      }
+
+      // GET /api/runtime/instances/:id/submissions
+      if (url.match(/\/api\/runtime\/instances\/[^/]+\/submissions$/) && method === 'GET') {
+        observer.next(new HttpResponse({ 
+          status: 200, 
+          body: [
+            {
+              id: 'sub_1',
+              organizationId: 'org_1',
+              applicationId: 'app_1',
+              status: 'completed',
+              dataJson: { firstName: 'John', lastName: 'Doe', email: 'john@example.com' },
+              createdAt: new Date(Date.now() - 3500000).toISOString()
+            }
+          ]
+        }));
+        observer.complete();
+        return;
+      }
+
+      // GET /api/runtime/instances/:id/logs
+      if (url.match(/\/api\/runtime\/instances\/[^/]+\/logs$/) && method === 'GET') {
+        observer.next(new HttpResponse({ 
+          status: 200, 
+          body: [
+            {
+              id: 'log_1',
+              instanceId: 'inst_1',
+              nodeId: 'node_1',
+              action: 'Instance Started',
+              previousStatus: 'pending',
+              newStatus: 'running',
+              contextSnapshot: {},
+              createdAt: new Date(Date.now() - 3600000).toISOString()
+            },
+            {
+              id: 'log_2',
+              instanceId: 'inst_1',
+              nodeId: 'node_1',
+              action: 'Form Submitted',
+              previousStatus: 'running',
+              newStatus: 'running',
+              contextSnapshot: { step: 1 },
+              createdAt: new Date(Date.now() - 3500000).toISOString()
+            }
+          ]
+        }));
+        observer.complete();
+        return;
+      }
+
+      // ============================================================================
+      // Submissions API (Phase 5)
+      // ============================================================================
+
+      // GET /api/submissions
+      if (url.match(/\/api\/submissions(\?.*)?$/) && method === 'GET') {
+        observer.next(new HttpResponse({ 
+          status: 200, 
+          body: { data: submissions, total: submissions.length, page: 1, pageSize: 10, totalPages: 1 } 
+        }));
+        observer.complete();
+        return;
+      }
+
+      // POST /api/submissions
+      if (url.endsWith('/api/submissions') && method === 'POST') {
+        const newSubmission: FormSubmission = {
+          id: Date.now().toString(),
+          workflowId: (body as Record<string, unknown>)['workflowId'] as string || '',
+          data: (body as Record<string, unknown>)['dataJson'] as Record<string, unknown> || {},
+          submittedAt: new Date().toISOString()
+        };
+        submissions.push(newSubmission);
+        observer.next(new HttpResponse({ status: 201, body: { ...newSubmission, status: 'pending' } }));
+        observer.complete();
+        return;
+      }
+
       // Pass through for any other requests
       next(req).subscribe({
         next: event => observer.next(event),

@@ -707,4 +707,118 @@ export class WorkflowBuilderComponent implements OnInit {
       }))
     };
   }
+
+  // ============================================================================
+  // Save as Draft and Publish Version (Phase 5)
+  // ============================================================================
+
+  isSaving = signal(false);
+  isPublishing = signal(false);
+  versionStatus = signal<'draft' | 'published' | 'new'>('new');
+  currentVersionId = signal<string | null>(null);
+  lastSavedAt = signal<Date | null>(null);
+
+  /**
+   * Save workflow as draft without publishing
+   */
+  saveDraft() {
+    if (this.nameControl.invalid || this.steps.length === 0) return;
+
+    this.isSaving.set(true);
+    const workflowData = this.buildWorkflowPayload();
+
+    const id = this.workflowId();
+    if (id && id !== 'new') {
+      // Update existing workflow
+      this.workflowService.updateWorkflow(id, workflowData as WorkflowDefinition).subscribe({
+        next: () => {
+          this.versionStatus.set('draft');
+          this.lastSavedAt.set(new Date());
+          this.isSaving.set(false);
+        },
+        error: () => {
+          this.isSaving.set(false);
+        }
+      });
+    } else {
+      // Create new workflow as draft
+      this.workflowService.createWorkflow(workflowData).subscribe({
+        next: (created) => {
+          this.workflowId.set(created.id);
+          this.versionStatus.set('draft');
+          this.lastSavedAt.set(new Date());
+          this.isSaving.set(false);
+          // Update URL without navigation
+          this.router.navigate(['/builder', created.id], { replaceUrl: true });
+        },
+        error: () => {
+          this.isSaving.set(false);
+        }
+      });
+    }
+  }
+
+  /**
+   * Publish workflow version (makes it available for runtime)
+   */
+  publishVersion() {
+    if (this.nameControl.invalid || this.steps.length === 0) return;
+
+    this.isPublishing.set(true);
+    const workflowData = this.buildWorkflowPayload();
+
+    const id = this.workflowId();
+    if (id && id !== 'new') {
+      // Save first, then publish
+      this.workflowService.updateWorkflow(id, workflowData as WorkflowDefinition).subscribe({
+        next: () => {
+          this.versionStatus.set('published');
+          this.lastSavedAt.set(new Date());
+          this.isPublishing.set(false);
+          // Navigate to dashboard after successful publish
+          this.router.navigate(['/']);
+        },
+        error: () => {
+          this.isPublishing.set(false);
+        }
+      });
+    } else {
+      // Create new workflow and publish immediately
+      this.workflowService.createWorkflow(workflowData).subscribe({
+        next: () => {
+          this.versionStatus.set('published');
+          this.isPublishing.set(false);
+          this.router.navigate(['/']);
+        },
+        error: () => {
+          this.isPublishing.set(false);
+        }
+      });
+    }
+  }
+
+  /**
+   * Get localized last saved time
+   */
+  getLastSavedText(): string {
+    const savedAt = this.lastSavedAt();
+    if (!savedAt) return '';
+    
+    const now = new Date();
+    const diffMs = now.getTime() - savedAt.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    
+    if (diffMins < 1) {
+      return this.lang.currentLang() === 'es' ? 'Guardado hace un momento' : 'Saved just now';
+    }
+    if (diffMins < 60) {
+      return this.lang.currentLang() === 'es' 
+        ? `Guardado hace ${diffMins} min` 
+        : `Saved ${diffMins}m ago`;
+    }
+    
+    return this.lang.currentLang() === 'es'
+      ? `Guardado a las ${savedAt.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}`
+      : `Saved at ${savedAt.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}`;
+  }
 }
