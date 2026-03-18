@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, BadRequestException, ForbiddenException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { createHash } from 'crypto';
@@ -7,12 +7,15 @@ import { ApplicationVersion } from '../entities/application-version.entity';
 import { AppValidationService } from './app-validation.service';
 import { DomainEventsService } from '../../events/services/domain-events.service';
 import { CreateVersionDto } from '../dto/create-version.dto';
+import { UpdateVersionDto } from '../dto/update-version.dto';
 
 @Injectable()
 export class AppVersioningService {
   constructor(
     @InjectRepository(ApplicationVersion)
     private readonly versionsRepo: Repository<ApplicationVersion>,
+    @InjectRepository(Application)
+    private readonly applicationsRepo: Repository<Application>,
     private readonly validation: AppValidationService,
     private readonly domainEvents: DomainEventsService,
   ) { }
@@ -41,12 +44,46 @@ export class AppVersioningService {
     return this.versionsRepo.save(version);
   }
 
+  async updateDraftVersion(
+    app: Application,
+    versionId: string,
+    dto: UpdateVersionDto,
+  ): Promise<ApplicationVersion> {
+    const version = await this.versionsRepo.findOneByOrFail({ 
+      id: versionId, 
+      applicationId: app.id 
+    });
+
+    // IMMUTABILITY CHECK: Cannot modify published or archived versions
+    if (version.status !== 'DRAFT') {
+      throw new ForbiddenException(
+        `Cannot modify version with status ${version.status}. Only DRAFT versions can be edited.`
+      );
+    }
+
+    if (dto.definitionJson) {
+      version.definitionJson = dto.definitionJson;
+      version.definitionHash = createHash('sha256')
+        .update(JSON.stringify(dto.definitionJson))
+        .digest('hex');
+    }
+
+    return this.versionsRepo.save(version);
+  }
+
   async publishVersion(app: Application, versionId: string, actorId: string): Promise<ApplicationVersion> {
     return this.versionsRepo.manager.transaction(async (trx) => {
       const version = await trx.findOneByOrFail(ApplicationVersion, { id: versionId, applicationId: app.id });
+      
+      if (version.status !== 'DRAFT') {
+        throw new BadRequestException(`Cannot publish version with status ${version.status}`);
+      }
+
       this.validation.validateDefinition(version.definitionJson);
 
+      // Archive all previously published versions
       await trx.update(ApplicationVersion, { applicationId: app.id, status: 'PUBLISHED' }, { status: 'ARCHIVED' });
+      
       version.status = 'PUBLISHED';
       version.publishedAt = new Date();
       await trx.save(version);
@@ -54,6 +91,49 @@ export class AppVersioningService {
       await trx.update(Application, { id: app.id }, { currentPublishedVersionId: version.id });
 
       await this.domainEvents.emit('application.version.published', {
+        organizationId: app.organizationId,
+        appId: app.id,
+        versionId: version.id,
+        actorId,
+      });
+
+      return version;
+    });
+  }
+
+  async rollbackToVersion(
+    app: Application,
+    versionId: string,
+    actorId: string,
+  ): Promise<ApplicationVersion> {
+    return this.versionsRepo.manager.transaction(async (trx) => {
+      const version = await trx.findOneByOrFail(ApplicationVersion, { 
+        id: versionId, 
+        applicationId: app.id 
+      });
+
+      // Can only rollback to previously published versions
+      if (version.status !== 'PUBLISHED' && version.status !== 'ARCHIVED') {
+        throw new BadRequestException(
+          'Can only rollback to PUBLISHED or ARCHIVED versions'
+        );
+      }
+
+      // Archive current published version
+      await trx.update(
+        ApplicationVersion,
+        { applicationId: app.id, status: 'PUBLISHED' },
+        { status: 'ARCHIVED' }
+      );
+
+      // Promote the target version to PUBLISHED
+      version.status = 'PUBLISHED';
+      version.publishedAt = new Date();
+      await trx.save(version);
+
+      await trx.update(Application, { id: app.id }, { currentPublishedVersionId: version.id });
+
+      await this.domainEvents.emit('application.version.rolledback', {
         organizationId: app.organizationId,
         appId: app.id,
         versionId: version.id,
