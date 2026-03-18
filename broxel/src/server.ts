@@ -11,7 +11,9 @@ const browserDistFolder = join(import.meta.dirname, '../browser');
 
 const app = express();
 app.use(express.json());
-const angularApp = new AngularNodeAppEngine();
+const angularApp = new AngularNodeAppEngine({
+  allowedHosts: ['localhost', '127.0.0.1', '10.100.8.56', '172.31.48.1']
+});
 
 // --- In-Memory Database ---
 type FieldType = 'shortText' | 'longText' | 'number' | 'email' | 'dropdown' | 'checkbox' | 'password' | 'ssoLogin' | 'message' | 'container' | 'text' | 'textarea' | 'select' | 'carousel' | 'button' | 'effect' | 'imageDropzone' | 'drawing';
