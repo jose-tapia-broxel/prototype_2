@@ -17,6 +17,11 @@ export interface VersionSummary {
   createdBy: string;
 }
 
+export interface DuplicateCheckResult {
+  isDuplicate: boolean;
+  existingVersion?: ApplicationVersion;
+}
+
 @Injectable()
 export class AppVersioningService {
   constructor(
@@ -92,16 +97,113 @@ export class AppVersioningService {
     };
   }
 
-  async createDraftVersion(app: Application, dto: CreateVersionDto): Promise<ApplicationVersion> {
+  /**
+   * Computes the SHA-256 hash for a definition JSON
+   */
+  computeDefinitionHash(definitionJson: Record<string, unknown>): string {
+    return createHash('sha256')
+      .update(JSON.stringify(definitionJson))
+      .digest('hex');
+  }
+
+  /**
+   * Checks if a definition with the same hash already exists (deduplication)
+   */
+  async checkForDuplicate(
+    applicationId: string,
+    definitionJson: Record<string, unknown>,
+  ): Promise<DuplicateCheckResult> {
+    const hash = this.computeDefinitionHash(definitionJson);
+    const existing = await this.versionsRepo.findOne({
+      where: { applicationId, definitionHash: hash },
+      order: { versionNumber: 'DESC' },
+    });
+
+    return {
+      isDuplicate: !!existing,
+      existingVersion: existing ?? undefined,
+    };
+  }
+
+  /**
+   * Finds a version by its definition hash (for deduplication)
+   */
+  async findByDefinitionHash(
+    applicationId: string,
+    hash: string,
+  ): Promise<ApplicationVersion | null> {
+    return this.versionsRepo.findOne({
+      where: { applicationId, definitionHash: hash },
+    });
+  }
+
+  /**
+   * Clones an existing version as a new DRAFT
+   */
+  async cloneVersionAsDraft(
+    app: Application,
+    sourceVersionId: string,
+    createdBy: string,
+  ): Promise<ApplicationVersion> {
+    const sourceVersion = await this.getVersion(app.id!, sourceVersionId);
+
+    // Check for existing duplicate
+    const { isDuplicate, existingVersion } = await this.checkForDuplicate(
+      app.id!,
+      sourceVersion.definitionJson,
+    );
+
+    if (isDuplicate && existingVersion?.status === 'DRAFT') {
+      // Return existing draft instead of creating duplicate
+      return existingVersion;
+    }
+
+    const latest = await this.versionsRepo.findOne({
+      where: { applicationId: app.id },
+      order: { versionNumber: 'DESC' },
+    });
+
+    const version = this.versionsRepo.create({
+      applicationId: app.id,
+      organizationId: app.organizationId,
+      versionNumber: (latest?.versionNumber ?? 0) + 1,
+      definitionJson: sourceVersion.definitionJson,
+      definitionHash: sourceVersion.definitionHash,
+      createdBy,
+      status: 'DRAFT',
+    });
+
+    return this.versionsRepo.save(version);
+  }
+
+  async createDraftVersion(
+    app: Application,
+    dto: CreateVersionDto,
+    options?: { allowDuplicates?: boolean },
+  ): Promise<ApplicationVersion & { duplicateWarning?: string }> {
+    const definitionHash = this.computeDefinitionHash(dto.definitionJson);
+
+    // SHA-256 deduplication check
+    if (!options?.allowDuplicates) {
+      const { isDuplicate, existingVersion } = await this.checkForDuplicate(
+        app.id!,
+        dto.definitionJson,
+      );
+
+      if (isDuplicate && existingVersion?.status === 'DRAFT') {
+        // Return existing draft with warning
+        return Object.assign(existingVersion, {
+          duplicateWarning: `Identical definition already exists in DRAFT version ${existingVersion.versionNumber}`,
+        });
+      }
+    }
+
     const latest = await this.versionsRepo.findOne({
       where: { applicationId: app.id },
       order: { versionNumber: 'DESC' },
     });
 
     const versionNumber = (latest?.versionNumber ?? 0) + 1;
-    const definitionHash = createHash('sha256')
-      .update(JSON.stringify(dto.definitionJson))
-      .digest('hex');
 
     const version = this.versionsRepo.create({
       applicationId: app.id,
@@ -135,9 +237,7 @@ export class AppVersioningService {
 
     if (dto.definitionJson) {
       version.definitionJson = dto.definitionJson;
-      version.definitionHash = createHash('sha256')
-        .update(JSON.stringify(dto.definitionJson))
-        .digest('hex');
+      version.definitionHash = this.computeDefinitionHash(dto.definitionJson);
     }
 
     return this.versionsRepo.save(version);

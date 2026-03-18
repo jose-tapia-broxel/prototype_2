@@ -71,18 +71,8 @@ export class ApplicationsController {
   }
 
   /**
-   * Gets a specific version with full definition JSON
-   */
-  @Get(':appId/versions/:versionId')
-  async getVersion(
-    @Param('appId') appId: string,
-    @Param('versionId') versionId: string,
-  ) {
-    return this.versioningService.getVersion(appId, versionId);
-  }
-
-  /**
    * Gets the current published version (if any)
+   * NOTE: Static route must come before dynamic :versionId
    */
   @Get(':appId/versions/current')
   async getCurrentVersion(@Param('appId') appId: string) {
@@ -95,6 +85,7 @@ export class ApplicationsController {
 
   /**
    * Gets the latest draft version (if any)
+   * NOTE: Static route must come before dynamic :versionId
    */
   @Get(':appId/versions/draft')
   async getLatestDraft(@Param('appId') appId: string) {
@@ -107,6 +98,7 @@ export class ApplicationsController {
 
   /**
    * Compares two versions
+   * NOTE: Static route must come before dynamic :versionId
    */
   @Get(':appId/versions/compare')
   async compareVersions(
@@ -115,6 +107,18 @@ export class ApplicationsController {
     @Query('versionB') versionB: string,
   ) {
     return this.versioningService.compareVersions(appId, versionA, versionB);
+  }
+
+  /**
+   * Gets a specific version with full definition JSON
+   * NOTE: Dynamic route must come after static routes
+   */
+  @Get(':appId/versions/:versionId')
+  async getVersion(
+    @Param('appId') appId: string,
+    @Param('versionId') versionId: string,
+  ) {
+    return this.versioningService.getVersion(appId, versionId);
   }
 
   @Post(':appId/versions')
@@ -157,5 +161,18 @@ export class ApplicationsController {
   ) {
     const app = await this.applicationsService.findByIdOrFail(appId);
     return this.versioningService.rollbackToVersion(app, versionId, user.userId);
+  }
+
+  /**
+   * Clones an existing version as a new draft
+   */
+  @Post(':appId/versions/:versionId/clone')
+  async cloneVersionAsDraft(
+    @Param('appId') appId: string,
+    @Param('versionId') versionId: string,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    const app = await this.applicationsService.findByIdOrFail(appId);
+    return this.versioningService.cloneVersionAsDraft(app, versionId, user.userId);
   }
 }
