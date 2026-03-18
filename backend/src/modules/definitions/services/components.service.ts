@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Component } from '../entities/component.entity';
 import { CreateComponentDto } from '../dto/create-component.dto';
-import { UpdateComponentDto } from '../dto/update-component.dto';
+import { UpdateComponentDto, MoveComponentDto } from '../dto/update-component.dto';
 
 @Injectable()
 export class ComponentsService {
@@ -21,6 +21,61 @@ export class ComponentsService {
       throw new BadRequestException('A component must belong to either a screen or a form');
     }
     return this.componentsRepo.save(this.componentsRepo.create(dto));
+  }
+
+  /**
+   * Moves a component to a different parent (screen or form)
+   * Enforces XOR constraint during the move operation
+   */
+  async moveComponent(
+    componentId: string,
+    organizationId: string,
+    dto: MoveComponentDto,
+  ): Promise<Component> {
+    const component = await this.findByIdOrFail(componentId, organizationId);
+
+    // Validate XOR constraint
+    if (dto.screenId && dto.formId) {
+      throw new BadRequestException('A component must belong to either a screen or a form, not both');
+    }
+    if (!dto.screenId && !dto.formId) {
+      throw new BadRequestException('Must specify either screenId or formId to move component');
+    }
+
+    // Update parent reference
+    if (dto.screenId) {
+      component.screenId = dto.screenId;
+      component.formId = undefined;
+    } else if (dto.formId) {
+      component.formId = dto.formId;
+      component.screenId = undefined;
+    }
+
+    // Reset sort order when moving to a new parent
+    component.sortOrder = 0;
+
+    return this.componentsRepo.save(component);
+  }
+
+  /**
+   * Duplicates a component (creates a copy with new ID)
+   */
+  async duplicateComponent(
+    componentId: string,
+    organizationId: string,
+  ): Promise<Component> {
+    const original = await this.findByIdOrFail(componentId, organizationId);
+
+    const duplicate = this.componentsRepo.create({
+      screenId: original.screenId,
+      formId: original.formId,
+      organizationId: original.organizationId,
+      componentType: original.componentType,
+      configJson: { ...original.configJson },
+      sortOrder: original.sortOrder + 1,
+    });
+
+    return this.componentsRepo.save(duplicate);
   }
 
   findAllByScreen(screenId: string, organizationId: string): Promise<Component[]> {

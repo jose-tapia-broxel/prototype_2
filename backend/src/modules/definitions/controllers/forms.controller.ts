@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UseGuards, UseInterceptors, NotFoundException } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UseGuards, UseInterceptors, NotFoundException, BadRequestException } from '@nestjs/common';
 import { FormsService } from '../services/forms.service';
 import { CreateFormDto } from '../dto/create-form.dto';
 import { UpdateFormDto } from '../dto/update-form.dto';
@@ -63,5 +63,40 @@ export class FormsController {
     @Param('formId') formId: string,
   ) {
     return this.formsService.delete(formId, orgId);
+  }
+
+  /**
+   * Validates a form schema without saving
+   * Useful for real-time validation in the form builder
+   */
+  @Post('validate-schema')
+  async validateSchema(
+    @Body() body: { schemaJson: unknown[] },
+  ) {
+    if (!body.schemaJson || !Array.isArray(body.schemaJson)) {
+      throw new BadRequestException('schemaJson must be a non-empty array');
+    }
+    const validated = this.formsService.validateSchema(body.schemaJson);
+    return { valid: true, fields: validated.length, schema: validated };
+  }
+
+  /**
+   * Validates submission data against a form's schema
+   * Returns validation errors if any
+   */
+  @Post(':formId/validate-submission')
+  async validateSubmissionData(
+    @TenantId() orgId: string,
+    @Param('formId') formId: string,
+    @Body() body: { data: Record<string, unknown> },
+  ) {
+    if (!body.data || typeof body.data !== 'object') {
+      throw new BadRequestException('data must be an object');
+    }
+    const errors = await this.formsService.validateSubmissionData(formId, orgId, body.data);
+    return {
+      valid: errors.length === 0,
+      errors,
+    };
   }
 }

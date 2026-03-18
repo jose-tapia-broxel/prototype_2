@@ -9,11 +9,25 @@ import { ComponentsController } from './controllers/components.controller';
 import { FormsService } from './services/forms.service';
 import { ScreensService } from './services/screens.service';
 import { ComponentsService } from './services/components.service';
+import { FormSchemaValidationService } from './services/form-schema-validation.service';
+import { ScreenLayoutService } from './services/screen-layout.service';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Form, Screen, Component])],
   controllers: [FormsController, ScreensController, ComponentsController],
-  providers: [FormsService, ScreensService, ComponentsService],
-  exports: [FormsService, ScreensService, ComponentsService],
+  providers: [
+    FormsService,
+    ScreensService,
+    ComponentsService,
+    FormSchemaValidationService,
+    ScreenLayoutService,
+  ],
+  exports: [
+    FormsService,
+    ScreensService,
+    ComponentsService,
+    FormSchemaValidationService,
+    ScreenLayoutService,
+  ],
 })
 export class DefinitionsModule {}

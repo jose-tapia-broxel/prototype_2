@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Patch, UseGuards, UseInterceptors, NotFoundException } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Patch, Query, UseGuards, UseInterceptors, NotFoundException } from '@nestjs/common';
 import { ApplicationsService } from '../services/applications.service';
 import { AppVersioningService } from '../services/app-versioning.service';
 import { CreateApplicationDto } from '../dto/create-application.dto';
@@ -53,6 +53,68 @@ export class ApplicationsController {
     @Body() dto: UpdateApplicationDto,
   ) {
     return this.applicationsService.update(appId, orgId, dto);
+  }
+
+  /**
+   * Lists all versions for an application (summary without full definition)
+   */
+  @Get(':appId/versions')
+  async listVersions(
+    @Param('appId') appId: string,
+    @Query('status') status?: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED',
+  ) {
+    const versions = await this.versioningService.listVersions(appId);
+    if (status) {
+      return versions.filter(v => v.status === status);
+    }
+    return versions;
+  }
+
+  /**
+   * Gets a specific version with full definition JSON
+   */
+  @Get(':appId/versions/:versionId')
+  async getVersion(
+    @Param('appId') appId: string,
+    @Param('versionId') versionId: string,
+  ) {
+    return this.versioningService.getVersion(appId, versionId);
+  }
+
+  /**
+   * Gets the current published version (if any)
+   */
+  @Get(':appId/versions/current')
+  async getCurrentVersion(@Param('appId') appId: string) {
+    const version = await this.versioningService.getCurrentPublishedVersion(appId);
+    if (!version) {
+      throw new NotFoundException(`No published version found for application ${appId}`);
+    }
+    return version;
+  }
+
+  /**
+   * Gets the latest draft version (if any)
+   */
+  @Get(':appId/versions/draft')
+  async getLatestDraft(@Param('appId') appId: string) {
+    const version = await this.versioningService.getLatestDraftVersion(appId);
+    if (!version) {
+      throw new NotFoundException(`No draft version found for application ${appId}`);
+    }
+    return version;
+  }
+
+  /**
+   * Compares two versions
+   */
+  @Get(':appId/versions/compare')
+  async compareVersions(
+    @Param('appId') appId: string,
+    @Query('versionA') versionA: string,
+    @Query('versionB') versionB: string,
+  ) {
+    return this.versioningService.compareVersions(appId, versionA, versionB);
   }
 
   @Post(':appId/versions')

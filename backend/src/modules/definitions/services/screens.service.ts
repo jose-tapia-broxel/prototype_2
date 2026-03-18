@@ -4,16 +4,56 @@ import { Repository } from 'typeorm';
 import { Screen } from '../entities/screen.entity';
 import { CreateScreenDto } from '../dto/create-screen.dto';
 import { UpdateScreenDto } from '../dto/update-screen.dto';
+import { ScreenLayoutService, LayoutConfig, LayoutType } from './screen-layout.service';
 
 @Injectable()
 export class ScreensService {
   constructor(
     @InjectRepository(Screen)
     private readonly screensRepo: Repository<Screen>,
+    private readonly layoutService: ScreenLayoutService,
   ) {}
 
   create(dto: CreateScreenDto): Promise<Screen> {
+    // Validate layout if provided, otherwise set default
+    if (dto.layoutJson && Object.keys(dto.layoutJson).length > 0) {
+      this.layoutService.validateLayout(dto.layoutJson);
+    } else {
+      dto.layoutJson = this.layoutService.createDefaultLayout('stack') as unknown as Record<string, unknown>;
+    }
     return this.screensRepo.save(this.screensRepo.create(dto));
+  }
+
+  /**
+   * Validates layout configuration without saving
+   */
+  validateLayout(layoutJson: Record<string, unknown>): LayoutConfig {
+    return this.layoutService.validateLayout(layoutJson);
+  }
+
+  /**
+   * Creates a screen with a specific layout type
+   */
+  async createWithLayoutType(
+    dto: CreateScreenDto,
+    layoutType: LayoutType,
+  ): Promise<Screen> {
+    dto.layoutJson = this.layoutService.createDefaultLayout(layoutType) as unknown as Record<string, unknown>;
+    return this.create(dto);
+  }
+
+  /**
+   * Updates screen layout, merging with component placements
+   */
+  async updateLayout(
+    id: string,
+    organizationId: string,
+    layoutJson: Record<string, unknown>,
+  ): Promise<Screen> {
+    const screen = await this.findByIdOrFail(id, organizationId);
+    this.layoutService.validateLayout(layoutJson);
+    screen.layoutJson = layoutJson;
+    return this.screensRepo.save(screen);
   }
 
   findAllByApplication(applicationId: string, organizationId: string): Promise<Screen[]> {
@@ -36,6 +76,10 @@ export class ScreensService {
     const screen = await this.screensRepo.findOne({ where: { id, organizationId } });
     if (!screen) {
       throw new NotFoundException(`Screen with id ${id} not found`);
+    }
+    // Validate layout if being updated
+    if (dto.layoutJson) {
+      this.layoutService.validateLayout(dto.layoutJson);
     }
     Object.assign(screen, dto);
     return this.screensRepo.save(screen);

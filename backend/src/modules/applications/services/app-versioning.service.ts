@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException, ForbiddenException } from '@nestjs/common';
+import { Injectable, BadRequestException, ForbiddenException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { createHash } from 'crypto';
@@ -8,6 +8,14 @@ import { AppValidationService } from './app-validation.service';
 import { DomainEventsService } from '../../events/services/domain-events.service';
 import { CreateVersionDto } from '../dto/create-version.dto';
 import { UpdateVersionDto } from '../dto/update-version.dto';
+
+export interface VersionSummary {
+  id: string;
+  versionNumber: number;
+  status: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED';
+  publishedAt?: Date;
+  createdBy: string;
+}
 
 @Injectable()
 export class AppVersioningService {
@@ -19,6 +27,70 @@ export class AppVersioningService {
     private readonly validation: AppValidationService,
     private readonly domainEvents: DomainEventsService,
   ) { }
+
+  /**
+   * Lists all versions for an application (without full definition JSON for performance)
+   */
+  async listVersions(applicationId: string): Promise<VersionSummary[]> {
+    const versions = await this.versionsRepo.find({
+      where: { applicationId },
+      order: { versionNumber: 'DESC' },
+      select: ['id', 'versionNumber', 'status', 'publishedAt', 'createdBy'],
+    });
+    return versions;
+  }
+
+  /**
+   * Gets a specific version by ID with full definition
+   */
+  async getVersion(applicationId: string, versionId: string): Promise<ApplicationVersion> {
+    const version = await this.versionsRepo.findOne({
+      where: { id: versionId, applicationId },
+    });
+    if (!version) {
+      throw new NotFoundException(`Version ${versionId} not found for application ${applicationId}`);
+    }
+    return version;
+  }
+
+  /**
+   * Gets the current published version for an application
+   */
+  async getCurrentPublishedVersion(applicationId: string): Promise<ApplicationVersion | null> {
+    return this.versionsRepo.findOne({
+      where: { applicationId, status: 'PUBLISHED' },
+    });
+  }
+
+  /**
+   * Gets the latest draft version for an application (if any)
+   */
+  async getLatestDraftVersion(applicationId: string): Promise<ApplicationVersion | null> {
+    return this.versionsRepo.findOne({
+      where: { applicationId, status: 'DRAFT' },
+      order: { versionNumber: 'DESC' },
+    });
+  }
+
+  /**
+   * Compares two versions and returns the differences in their definitions
+   */
+  async compareVersions(
+    applicationId: string,
+    versionIdA: string,
+    versionIdB: string,
+  ): Promise<{ versionA: ApplicationVersion; versionB: ApplicationVersion; hashMatch: boolean }> {
+    const [versionA, versionB] = await Promise.all([
+      this.getVersion(applicationId, versionIdA),
+      this.getVersion(applicationId, versionIdB),
+    ]);
+    
+    return {
+      versionA,
+      versionB,
+      hashMatch: versionA.definitionHash === versionB.definitionHash,
+    };
+  }
 
   async createDraftVersion(app: Application, dto: CreateVersionDto): Promise<ApplicationVersion> {
     const latest = await this.versionsRepo.findOne({

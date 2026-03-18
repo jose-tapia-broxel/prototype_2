@@ -334,6 +334,9 @@ pending → running → completed | failed | paused
 Invalid transition rejection
 WorkflowExecutionLog audit trail (append-only)
 Context tracking (context_json updates)
+
+
+
 PHASE 4: Telemetry & Observability (Week 2)
 Objectives
  Event publishing for all domain changes
@@ -350,6 +353,9 @@ Telemetry Storage (2 hours)
 TelemetryService saves events to DB
 event_category enum enforcement (workflow, submission, rule, user_action, system, error)
 Retention policy setup
+
+
+
 PHASE 5: Frontend Core (Week 1-2)
 Objectives
  Dashboard with workflow list
