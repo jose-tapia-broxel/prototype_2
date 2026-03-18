@@ -1,18 +1,23 @@
-import { IsObject, IsUUID } from 'class-validator';
+import { IsObject, IsOptional, IsUUID } from 'class-validator';
 
 export class StartWorkflowInstanceDto {
   @IsUUID()
-  organizationId: string;
+  organizationId!: string;
 
   @IsUUID()
-  applicationId: string;
+  applicationId!: string;
 
   @IsUUID()
-  applicationVersionId: string;
+  applicationVersionId!: string;
 
   @IsUUID()
-  workflowId: string;
+  workflowId!: string;
 
+  @IsOptional()
   @IsObject()
-  contextJson: Record<string, unknown>;
+  contextJson?: Record<string, unknown>;
+
+  @IsOptional()
+  @IsUUID()
+  startedBy?: string;
 }

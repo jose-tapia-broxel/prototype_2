@@ -1,23 +1,29 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
-import { jsonColumnType, uuidColumnType } from '../../../infrastructure/database/column-types';
+import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
+import { jsonColumnType, timestampColumnType, uuidColumnType } from '../../../infrastructure/database/column-types';
 
 @Entity('screens')
 export class Screen {
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+  id!: string;
 
-  @Column({ name: 'application_version_id', type: uuidColumnType() })
-  applicationVersionId: string;
+  @Column({ name: 'application_id', type: uuidColumnType() })
+  applicationId!: string;
 
-  @Column({ name: 'screen_key' })
-  screenKey: string;
+  @Column({ name: 'organization_id', type: uuidColumnType() })
+  organizationId!: string;
 
-  @Column()
-  name: string;
+  @Column({ type: 'varchar', length: 200 })
+  name!: string;
 
-  @Column()
-  route: string;
+  @Column({ name: 'layout_json', type: jsonColumnType(), default: {} })
+  layoutJson!: Record<string, unknown>;
 
-  @Column({ name: 'schema_json', type: jsonColumnType() })
-  schemaJson: Record<string, unknown>;
+  @Column({ name: 'created_by', type: uuidColumnType(), nullable: true })
+  createdBy?: string;
+
+  @CreateDateColumn({ name: 'created_at', type: timestampColumnType() })
+  createdAt!: Date;
+
+  @UpdateDateColumn({ name: 'updated_at', type: timestampColumnType() })
+  updatedAt!: Date;
 }
