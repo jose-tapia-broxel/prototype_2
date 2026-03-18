@@ -1,11 +1,12 @@
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { jsonColumnType, uuidColumnType } from '../../../infrastructure/database/column-types';
 
 @Entity('components')
 export class Component {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ name: 'application_version_id', type: 'uuid' })
+  @Column({ name: 'application_version_id', type: uuidColumnType() })
   applicationVersionId: string;
 
   @Column({ name: 'component_key' })
@@ -14,6 +15,6 @@ export class Component {
   @Column({ name: 'component_type' })
   componentType: string;
 
-  @Column({ name: 'props_json', type: 'jsonb' })
+  @Column({ name: 'props_json', type: jsonColumnType() })
   propsJson: Record<string, unknown>;
 }
