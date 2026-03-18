@@ -17,15 +17,19 @@ import { WorkersModule } from './modules/workers/workers.module';
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     TypeOrmModule.forRoot(typeOrmConfig),
+    // Core modules first
     AuthModule,
     EventsModule,
+    // Domain modules
     ApplicationsModule,
     DefinitionsModule,
     WorkflowsModule,
     RulesModule,
+    // Runtime modules (order matters due to dependencies)
+    RuntimeModule,
     SubmissionsModule,
     WorkersModule,
-    RuntimeModule,
+    // Observability
     TelemetryModule,
   ],
 })

@@ -10,5 +10,6 @@ import { EventsModule } from '../events/events.module';
   imports: [TypeOrmModule.forFeature([WorkflowInstance, WorkflowExecutionLog]), EventsModule],
   controllers: [WorkflowInstancesController],
   providers: [WorkflowInstanceService],
+  exports: [WorkflowInstanceService],
 })
 export class RuntimeModule {}

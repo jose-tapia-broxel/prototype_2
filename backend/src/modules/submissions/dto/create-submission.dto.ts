@@ -1,4 +1,4 @@
-import { IsObject, IsString, IsUUID, Length } from 'class-validator';
+import { IsObject, IsOptional, IsString, IsUUID, Length } from 'class-validator';
 
 export class CreateSubmissionDto {
   @IsUUID()
@@ -8,12 +8,30 @@ export class CreateSubmissionDto {
   applicationId: string;
 
   @IsUUID()
-  applicationVersionId: string;
+  @IsOptional()
+  applicationVersionId?: string;
+
+  @IsUUID()
+  @IsOptional()
+  workflowInstanceId?: string;
+
+  @IsUUID()
+  @IsOptional()
+  formId?: string;
+
+  @IsUUID()
+  @IsOptional()
+  nodeId?: string;
 
   @IsString()
   @Length(2, 120)
-  workflowKey: string;
+  @IsOptional()
+  workflowKey?: string;
 
   @IsObject()
   payload: Record<string, unknown>;
+
+  @IsUUID()
+  @IsOptional()
+  submittedBy?: string;
 }
