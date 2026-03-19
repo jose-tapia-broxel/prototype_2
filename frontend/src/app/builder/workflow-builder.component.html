@@ -214,6 +214,30 @@
                           [class.text-white]="activeCustomFieldTab() === 'js'"
                           class="px-4 py-1.5 rounded-md text-xs font-bold text-slate-400 transition-all">JS</button>
                 </div>
+                <div class="flex items-center gap-3">
+                  <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Themes</span>
+                  <select [value]="htmlTheme()" (change)="htmlTheme.set($any($event.target).value)" class="bg-slate-800 text-slate-200 text-[10px] rounded px-2 py-1" aria-label="Custom HTML theme">
+                    <option value="night">HTML Night</option>
+                    <option value="light">HTML Light</option>
+                    <option value="ocean">HTML Ocean</option>
+                    <option value="monokai">HTML Monokai</option>
+                    <option value="intelligence">HTML Intelligence</option>
+                  </select>
+                  <select [value]="cssTheme()" (change)="cssTheme.set($any($event.target).value)" class="bg-slate-800 text-slate-200 text-[10px] rounded px-2 py-1" aria-label="Custom CSS theme">
+                    <option value="night">CSS Night</option>
+                    <option value="light">CSS Light</option>
+                    <option value="sunset">CSS Sunset</option>
+                    <option value="monokai">CSS Monokai</option>
+                    <option value="intelligence">CSS Intelligence</option>
+                  </select>
+                  <select [value]="jsTheme()" (change)="jsTheme.set($any($event.target).value)" class="bg-slate-800 text-slate-200 text-[10px] rounded px-2 py-1" aria-label="Custom JS/TS theme">
+                    <option value="night">JS/TS Night</option>
+                    <option value="light">JS/TS Light</option>
+                    <option value="matrix">JS/TS Matrix</option>
+                    <option value="monokai">JS/TS Monokai</option>
+                    <option value="intelligence">JS/TS Intelligence</option>
+                  </select>
+                </div>
               </div>
               <div class="flex items-center gap-4">
                 <button (click)="editingCustomField.set(null)" class="text-slate-400 hover:text-white px-4 py-2 text-sm font-medium">Cancel</button>
@@ -359,19 +383,25 @@
                             <option value="night">HTML Night</option>
                             <option value="light">HTML Light</option>
                             <option value="ocean">HTML Ocean</option>
+                            <option value="monokai">HTML Monokai</option>
+                            <option value="intelligence">HTML Intelligence</option>
                           </select>
                           <select [value]="cssTheme()" (change)="cssTheme.set($any($event.target).value)" class="bg-slate-800 text-slate-200 text-[10px] rounded px-2 py-1" aria-label="CSS theme">
                             <option value="night">CSS Night</option>
                             <option value="light">CSS Light</option>
                             <option value="sunset">CSS Sunset</option>
+                            <option value="monokai">CSS Monokai</option>
+                            <option value="intelligence">CSS Intelligence</option>
                           </select>
                           <select [value]="jsTheme()" (change)="jsTheme.set($any($event.target).value)" class="bg-slate-800 text-slate-200 text-[10px] rounded px-2 py-1" aria-label="JavaScript theme">
                             <option value="night">JS/TS Night</option>
                             <option value="light">JS/TS Light</option>
                             <option value="matrix">JS/TS Matrix</option>
+                            <option value="monokai">JS/TS Monokai</option>
+                            <option value="intelligence">JS/TS Intelligence</option>
                           </select>
                         </div>
-                        <div class="flex bg-slate-800 p-1 rounded-lg">
+                <div class="flex bg-slate-800 p-1 rounded-lg">
                           <button (click)="activeCodeTab.set('html')" 
                                   [class.bg-slate-700]="activeCodeTab() === 'html'"
                                   [class.text-white]="activeCodeTab() === 'html'"
