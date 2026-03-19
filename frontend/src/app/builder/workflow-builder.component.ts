@@ -89,24 +89,31 @@ export class WorkflowBuilderComponent implements OnInit {
   connectingFrom = signal<string | null>(null);
   hoveredTargetStep = signal<string | null>(null);
   currentMousePos = signal({ x: 0, y: 0 });
+  private readonly connectorOffset = 16;
 
   computedConnections = computed(() => {
-    const conns = [];
+    const conns: { id: string; path: string; startX: number; startY: number; endX: number; endY: number }[] = [];
     for (const step of this.steps) {
       if (step.navigation?.nextStep) {
         const target = this.steps.find(s => s.id === step.navigation!.nextStep);
         if (target) {
-          const startX = (step.position?.x || 0) + (step.dimensions?.width || 360);
+          const startX = (step.position?.x || 0) + (step.dimensions?.width || 360) + this.connectorOffset;
           const startY = (step.position?.y || 0) + ((step.dimensions?.height || 650) / 2);
-          const endX = (target.position?.x || 0);
+          const endX = (target.position?.x || 0) - this.connectorOffset;
           const endY = (target.position?.y || 0) + ((target.dimensions?.height || 650) / 2);
-          
-          const cp1x = startX + Math.max(100, (endX - startX) / 2);
-          const cp2x = endX - Math.max(100, (endX - startX) / 2);
-          
+
+          const distanceX = Math.abs(endX - startX);
+          const curveOffset = Math.max(120, Math.min(260, distanceX * 0.55));
+          const cp1x = startX + curveOffset;
+          const cp2x = endX - curveOffset;
+
           conns.push({
             id: `${step.id}-${target.id}`,
-            path: `M ${startX} ${startY} C ${cp1x} ${startY}, ${cp2x} ${endY}, ${endX} ${endY}`
+            path: `M ${startX} ${startY} C ${cp1x} ${startY}, ${cp2x} ${endY}, ${endX} ${endY}`,
+            startX,
+            startY,
+            endX,
+            endY
           });
         }
       }
@@ -121,7 +128,7 @@ export class WorkflowBuilderComponent implements OnInit {
     const source = this.steps.find(s => s.id === this.connectingFrom());
     if (!source) return '';
     
-    const startX = (source.position?.x || 0) + (source.dimensions?.width || 360);
+    const startX = (source.position?.x || 0) + (source.dimensions?.width || 360) + this.connectorOffset;
     const startY = (source.position?.y || 0) + ((source.dimensions?.height || 650) / 2);
     
     if (!isPlatformBrowser(this.platformId)) return '';
@@ -132,8 +139,10 @@ export class WorkflowBuilderComponent implements OnInit {
     const endX = (this.currentMousePos().x - rect.left - this.pan().x) / this.zoom();
     const endY = (this.currentMousePos().y - rect.top - this.pan().y) / this.zoom();
 
-    const cp1x = startX + Math.max(100, (endX - startX) / 2);
-    const cp2x = endX - Math.max(100, (endX - startX) / 2);
+    const distanceX = Math.abs(endX - startX);
+    const curveOffset = Math.max(120, Math.min(260, distanceX * 0.55));
+    const cp1x = startX + curveOffset;
+    const cp2x = endX - curveOffset;
     
     return `M ${startX} ${startY} C ${cp1x} ${startY}, ${cp2x} ${endY}, ${endX} ${endY}`;
   });

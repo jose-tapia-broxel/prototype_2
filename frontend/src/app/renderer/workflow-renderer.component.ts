@@ -81,6 +81,7 @@ export class WorkflowRendererComponent implements OnInit {
   isLandscape = signal<boolean>(false);
   isFullscreen = signal<boolean>(false);
   unsandboxMode = signal<boolean>(false);
+  showExecutionExplanations = signal<boolean>(false);
   viewportWidth = signal<number>(isPlatformBrowser(this.platformId) ? window.innerWidth : 1024);
   viewportHeight = signal<number>(isPlatformBrowser(this.platformId) ? window.innerHeight : 768);
 
@@ -286,6 +287,7 @@ export class WorkflowRendererComponent implements OnInit {
     this.route.queryParamMap.subscribe((params: any) => {
       this.isFullscreen.set(params.get('fullscreen') === 'true');
       this.unsandboxMode.set(params.get('unsandbox') === 'true');
+      this.showExecutionExplanations.set(params.get('explain') === 'true');
       if (this.isFullscreen()) {
         this.selectedDevice.set('desktop');
       }
