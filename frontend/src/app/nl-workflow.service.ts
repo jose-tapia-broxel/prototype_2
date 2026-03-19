@@ -10,8 +10,9 @@ export interface IntermediateIntentModel {
   sourceText: string;
   workflowName: string;
   fields: Array<{ id: string; label: string; type: 'number' | 'email' | 'text'; required: boolean; min?: number; max?: number }>;
-  steps: Array<{ id: string; title: string; kind: 'form' | 'decision' | 'approval' | 'end' }>;
+  steps: Array<{ id: string; title: string; kind: 'form' | 'decision' | 'approval' | 'end' | 'integration' }>;
   routes: Array<{ from: string; to: string; when?: string }>;
+  integrations?: Array<{ id: string; type: string; label: string; requiresConfig: boolean }>;
   ambiguities: IntentAmbiguity[];
 }
 
@@ -22,6 +23,17 @@ export interface WorkflowGenerationResult {
 
 @Injectable({ providedIn: 'root' })
 export class NaturalLanguageWorkflowService {
+  
+  // Integration detection patterns
+  private readonly integrationPatterns = [
+    { keywords: ['api', 'llamar', 'consultar', 'fetch', 'rest', 'endpoint'], type: 'api_call', label: 'Llamada API' },
+    { keywords: ['firebase', 'firestore', 'guardar', 'almacenar en firebase'], type: 'firebase_action', label: 'Acción Firebase' },
+    { keywords: ['cache', 'cachear', 'almacenar temporalmente', 'guardar temporalmente'], type: 'cache_operation', label: 'Operación de caché' },
+    { keywords: ['cdn', 'subir archivo', 'upload', 'subir imagen', 'cloud storage'], type: 'cdn_upload', label: 'Subir a CDN' },
+    { keywords: ['transformar', 'mapear', 'convert', 'transform data'], type: 'transformation', label: 'Transformar datos' },
+    { keywords: ['webhook', 'callback', 'notificar', 'notify external'], type: 'webhook_listener', label: 'Webhook' },
+  ];
+
   interpret(text: string): IntermediateIntentModel {
     const normalized = text.trim().toLowerCase();
     const hasRegistration = /registro|registration|registración/.test(normalized);
@@ -84,12 +96,48 @@ export class NaturalLanguageWorkflowService {
       });
     }
 
+    // Detect integrations
+    const integrations: Array<{ id: string; type: string; label: string; requiresConfig: boolean }> = [];
+    for (const pattern of this.integrationPatterns) {
+      const regex = new RegExp(pattern.keywords.join('|'), 'i');
+      if (regex.test(normalized)) {
+        const integrationId = `integration_${pattern.type}_${Date.now()}`;
+        integrations.push({
+          id: integrationId,
+          type: pattern.type,
+          label: pattern.label,
+          requiresConfig: true
+        });
+
+        // Add integration step
+        steps.splice(steps.length - 1, 0, {
+          id: integrationId,
+          title: pattern.label,
+          kind: 'integration'
+        });
+
+        // Add route to integration
+        const lastNonEndStep = steps[steps.length - 3];
+        if (lastNonEndStep) {
+          routes.push({ from: lastNonEndStep.id, to: integrationId });
+          routes.push({ from: integrationId, to: 'fin' });
+        }
+
+        // Add ambiguity for integration configuration
+        ambiguities.push({
+          question: `¿Qué configuración específica necesitas para ${pattern.label}?`,
+          confidence: 0.75
+        });
+      }
+    }
+
     return {
       sourceText: text,
       workflowName: hasRegistration ? 'Flujo de registro' : 'Flujo generado por lenguaje natural',
       fields,
       steps,
       routes,
+      integrations: integrations.length > 0 ? integrations : undefined,
       ambiguities
     };
   }
