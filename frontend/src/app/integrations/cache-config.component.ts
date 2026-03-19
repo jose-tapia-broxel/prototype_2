@@ -44,10 +44,10 @@ export interface CacheOperationConfig extends IntegrationConfig {
         <input
           type="text"
           [(ngModel)]="config().key"
-          placeholder="e.g., user_profile_{{userId}}"
+          placeholder="e.g., user_profile_{{ '{{' }}userId{{ '}}' }}"
           class="form-control"
         />
-        <small class="hint">Use \{\{variable\}\} for dynamic keys</small>
+        <small class="hint">Use {{ '{{' }}variable{{ '}}' }} for dynamic keys</small>
       </div>
 
       <div *ngIf="config().operation === 'write'" class="form-group">
@@ -70,7 +70,7 @@ export interface CacheOperationConfig extends IntegrationConfig {
         <textarea
           [(ngModel)]="valueText"
           (ngModelChange)="onValueChange()"
-          placeholder='{ "data": "value" } or use {{context.variable}}'
+          placeholder='{ "data": "value" } or use template variables'
           rows="6"
           class="form-control code-input"
           spellcheck="false"></textarea>

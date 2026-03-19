@@ -83,7 +83,7 @@ export interface IntegrationConfig {
             [(ngModel)]="config()[field.name]"
             (ngModelChange)="onConfigChange()"
             [placeholder]="field.placeholder || ''"
-            [required]="field.required"
+            [required]="!!field.required"
             class="form-control">
 
           <!-- Number Input -->
@@ -94,7 +94,7 @@ export interface IntegrationConfig {
             [(ngModel)]="config()[field.name]"
             (ngModelChange)="onConfigChange()"
             [placeholder]="field.placeholder || ''"
-            [required]="field.required"
+            [required]="!!field.required"
             class="form-control">
 
           <!-- Textarea -->
@@ -104,7 +104,7 @@ export interface IntegrationConfig {
             [(ngModel)]="config()[field.name]"
             (ngModelChange)="onConfigChange()"
             [placeholder]="field.placeholder || ''"
-            [required]="field.required"
+            [required]="!!field.required"
             rows="4"
             class="form-control"></textarea>
 
@@ -114,7 +114,7 @@ export interface IntegrationConfig {
             [id]="field.name"
             [(ngModel)]="config()[field.name]"
             (ngModelChange)="onConfigChange()"
-            [required]="field.required"
+            [required]="!!field.required"
             class="form-control">
             <option value="">Select {{ field.label }}...</option>
             <option *ngFor="let opt of field.options" [value]="opt.value">

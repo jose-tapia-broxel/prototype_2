@@ -53,7 +53,7 @@ export interface ApiCallConfig extends IntegrationConfig {
             (ngModelChange)="onConfigChange()"
             placeholder="https://api.example.com/endpoint"
             class="form-control url-field">
-          <small class="hint">Use \{\{variable\}\} for dynamic values</small>
+          <small class="hint">Use {{ '{{' }}variable{{ '}}' }} for dynamic values</small>
         </div>
       </div>
 
