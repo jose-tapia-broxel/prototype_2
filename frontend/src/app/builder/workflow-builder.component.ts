@@ -90,8 +90,10 @@ export class WorkflowBuilderComponent implements OnInit {
   hoveredTargetStep = signal<string | null>(null);
   currentMousePos = signal({ x: 0, y: 0 });
   private readonly connectorOffset = 16;
+  private stepsVersion = signal(0);
 
   computedConnections = computed(() => {
+    this.stepsVersion();
     const conns: { id: string; path: string; startX: number; startY: number; endX: number; endY: number }[] = [];
     for (const step of this.steps) {
       if (step.navigation?.nextStep) {
@@ -251,6 +253,7 @@ export class WorkflowBuilderComponent implements OnInit {
         if (!step.position) step.position = { x: 0, y: 0 };
         step.position.x += dx;
         step.position.y += dy;
+        this.stepsVersion.update(v => v + 1);
       }
       this.lastMousePos = { x: e.clientX, y: e.clientY };
     } else if (this.resizingStep()) {
@@ -262,6 +265,7 @@ export class WorkflowBuilderComponent implements OnInit {
         if (!step.dimensions) step.dimensions = { width: 360, height: 650 };
         step.dimensions.width = Math.max(250, step.dimensions.width + dx);
         step.dimensions.height = Math.max(300, step.dimensions.height + dy);
+        this.stepsVersion.update(v => v + 1);
       }
       this.lastMousePos = { x: e.clientX, y: e.clientY };
     } else if (this.draggingField()) {
@@ -309,6 +313,7 @@ export class WorkflowBuilderComponent implements OnInit {
         if (sourceStep) {
           if (!sourceStep.navigation) sourceStep.navigation = {};
           sourceStep.navigation.nextStep = this.hoveredTargetStep() || undefined;
+          this.stepsVersion.update(v => v + 1);
         }
       }
       this.isConnecting.set(false);
@@ -409,6 +414,7 @@ export class WorkflowBuilderComponent implements OnInit {
   removeConnection(step: { navigation?: WorkflowNavigation }) {
     if (step.navigation) {
       step.navigation.nextStep = undefined;
+      this.stepsVersion.update(v => v + 1);
     }
   }
 
@@ -464,6 +470,7 @@ export class WorkflowBuilderComponent implements OnInit {
         htmlCode: s.htmlCode || '',
         cssCode: s.cssCode || ''
       }));
+      this.stepsVersion.update(v => v + 1);
     });
   }
 
@@ -486,6 +493,7 @@ export class WorkflowBuilderComponent implements OnInit {
       htmlCode: '',
       cssCode: ''
     });
+    this.stepsVersion.update(v => v + 1);
   }
 
   createCustomField() {
@@ -525,6 +533,7 @@ export class WorkflowBuilderComponent implements OnInit {
       this.deselectField();
     }
     this.steps.splice(index, 1);
+    this.stepsVersion.update(v => v + 1);
   }
 
   removeField(stepIndex: number, fieldIndex: number) {

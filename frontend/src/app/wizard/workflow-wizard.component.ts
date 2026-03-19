@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { RouterLink } from '@angular/router';
 import { WorkflowService } from '../workflow.service';
 import { WorkflowDefinition, WorkflowStep } from '../models/workflow.model';
 import { LanguageService } from '../language.service';
@@ -41,7 +41,6 @@ interface WizardAnswers {
 })
 export class WorkflowWizardComponent {
   private workflowService = inject(WorkflowService);
-  private router = inject(Router);
   lang = inject(LanguageService);
 
   loading = signal(false);
@@ -193,7 +192,7 @@ export class WorkflowWizardComponent {
       next: (created: WorkflowDefinition) => {
         this.loading.set(false);
         this.createdId.set(created.id);
-        void this.router.navigate(['/builder', created.id]);
+        window.open(`/run/${created.id}`, '_blank', 'noopener,noreferrer');
       },
       error: () => this.loading.set(false)
     });
