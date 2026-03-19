@@ -1,52 +1,52 @@
 <div class="flex-1 w-full max-w-6xl mx-auto p-6 py-8">
   <div class="flex items-center justify-between mb-8">
     <div>
-      <h1 class="text-3xl font-bold text-slate-900">Asistente guiado de workflows</h1>
-      <p class="text-slate-500 mt-2">Responde preguntas simples y generamos automáticamente pasos, reglas e integraciones.</p>
+      <h1 class="text-3xl font-bold text-slate-900">{{ lang.currentLang() === 'es' ? 'Asistente guiado de workflows' : 'Guided workflow wizard' }}</h1>
+      <p class="text-slate-500 mt-2">{{ lang.currentLang() === 'es' ? 'Responde preguntas simples y generamos automáticamente pasos, reglas e integraciones.' : 'Answer simple questions and we auto-generate steps, rules, and integrations.' }}</p>
     </div>
-    <a routerLink="/" class="text-sm font-semibold text-indigo-600 hover:text-indigo-700">Volver al dashboard</a>
+    <a routerLink="/" class="text-sm font-semibold text-indigo-600 hover:text-indigo-700">{{ lang.currentLang() === 'es' ? 'Volver al dashboard' : 'Back to dashboard' }}</a>
   </div>
 
   <div class="grid lg:grid-cols-[1.1fr_0.9fr] gap-6">
     <section class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
       <div class="flex items-center justify-between mb-5">
-        <span class="text-xs uppercase tracking-widest text-slate-400 font-bold">Paso {{ current() + 1 }} de {{ steps.length }}</span>
-        <span class="text-sm font-semibold text-slate-700">{{ steps[current()] }}</span>
+        <span class="text-xs uppercase tracking-widest text-slate-400 font-bold">{{ lang.currentLang() === 'es' ? 'Paso' : 'Step' }} {{ current() + 1 }} {{ lang.currentLang() === 'es' ? 'de' : 'of' }} {{ steps().length }}</span>
+        <span class="text-sm font-semibold text-slate-700">{{ steps()[current()] }}</span>
       </div>
 
       @switch (current()) {
         @case (0) {
           <div class="space-y-4">
             <label class="field">
-              <span>¿Qué quieres lograr con este proceso?</span>
-              <input [(ngModel)]="answers.goal" placeholder="Ej: Aprobar reembolsos" />
+              <span>{{ lang.currentLang() === 'es' ? '¿Qué quieres lograr con este proceso?' : 'What do you want to achieve with this process?' }}</span>
+              <input [(ngModel)]="answers.goal" [placeholder]="lang.currentLang() === 'es' ? 'Ej: Aprobar reembolsos' : 'Ex: Approve reimbursements'" />
             </label>
             <label class="field">
-              <span>¿Dónde ocurre hoy?</span>
-              <input [(ngModel)]="answers.currentPlace" placeholder="Ej: Email, CRM, Planilla" />
+              <span>{{ lang.currentLang() === 'es' ? '¿Dónde ocurre hoy?' : 'Where does it happen today?' }}</span>
+              <input [(ngModel)]="answers.currentPlace" [placeholder]="lang.currentLang() === 'es' ? 'Ej: Email, CRM, Planilla' : 'Ex: Email, CRM, Spreadsheet'" />
             </label>
           </div>
         }
         @case (1) {
           <div class="space-y-4">
             <label class="field">
-              <span>¿Qué evento inicia este proceso?</span>
+              <span>{{ lang.currentLang() === 'es' ? '¿Qué evento inicia este proceso?' : 'Which event starts this process?' }}</span>
               <select [(ngModel)]="answers.trigger">
-                <option value="form">Cuando llega un formulario</option>
-                <option value="email">Cuando llega un correo</option>
-                <option value="schedule">En fecha/hora programada</option>
-                <option value="manual">Manual</option>
+                <option value="form">{{ lang.currentLang() === 'es' ? 'Cuando llega un formulario' : 'When a form is submitted' }}</option>
+                <option value="email">{{ lang.currentLang() === 'es' ? 'Cuando llega un correo' : 'When an email arrives' }}</option>
+                <option value="schedule">{{ lang.currentLang() === 'es' ? 'En fecha/hora programada' : 'At a scheduled date/time' }}</option>
+                <option value="manual">{{ lang.currentLang() === 'es' ? 'Manual' : 'Manual' }}</option>
               </select>
             </label>
 
             @if (answers.trigger !== 'manual') {
               <label class="field">
-                <span>¿Con qué frecuencia ocurre?</span>
+                <span>{{ lang.currentLang() === 'es' ? '¿Con qué frecuencia ocurre?' : 'How frequently does it happen?' }}</span>
                 <select [(ngModel)]="answers.frequency">
-                  <option value="high">Varias veces al día</option>
-                  <option value="daily">Diario</option>
-                  <option value="weekly">Semanal</option>
-                  <option value="sporadic">Esporádico</option>
+                  <option value="high">{{ lang.currentLang() === 'es' ? 'Varias veces al día' : 'Several times a day' }}</option>
+                  <option value="daily">{{ lang.currentLang() === 'es' ? 'Diario' : 'Daily' }}</option>
+                  <option value="weekly">{{ lang.currentLang() === 'es' ? 'Semanal' : 'Weekly' }}</option>
+                  <option value="sporadic">{{ lang.currentLang() === 'es' ? 'Esporádico' : 'Sporadic' }}</option>
                 </select>
               </label>
             }
@@ -55,32 +55,32 @@
         @case (2) {
           <div class="space-y-4">
             <label class="field">
-              <span>¿Qué equipos participan?</span>
-              <input [(ngModel)]="answers.team" placeholder="Ej: Ventas, Finanzas, Soporte" />
+              <span>{{ lang.currentLang() === 'es' ? '¿Qué equipos participan?' : 'Which teams are involved?' }}</span>
+              <input [(ngModel)]="answers.team" [placeholder]="lang.currentLang() === 'es' ? 'Ej: Ventas, Finanzas, Soporte' : 'Ex: Sales, Finance, Support'" />
             </label>
 
             <label class="check">
               <input type="checkbox" [(ngModel)]="answers.hasApproval" />
-              <span>Este proceso requiere aprobación</span>
+              <span>{{ lang.currentLang() === 'es' ? 'Este proceso requiere aprobación' : 'This process needs approval' }}</span>
             </label>
 
             @if (answers.hasApproval) {
               <label class="field">
-                <span>¿Quién aprueba?</span>
-                <input [(ngModel)]="answers.approver" placeholder="Rol o persona" />
+                <span>{{ lang.currentLang() === 'es' ? '¿Quién aprueba?' : 'Who approves?' }}</span>
+                <input [(ngModel)]="answers.approver" [placeholder]="lang.currentLang() === 'es' ? 'Rol o persona' : 'Role or person'" />
               </label>
               <label class="field">
-                <span>Nivel de aprobación</span>
+                <span>{{ lang.currentLang() === 'es' ? 'Nivel de aprobación' : 'Approval level' }}</span>
                 <select [(ngModel)]="answers.approvalLevels">
-                  <option value="single">Un nivel</option>
-                  <option value="multi">Multinivel</option>
+                  <option value="single">{{ lang.currentLang() === 'es' ? 'Un nivel' : 'Single level' }}</option>
+                  <option value="multi">{{ lang.currentLang() === 'es' ? 'Multinivel' : 'Multi-level' }}</option>
                 </select>
               </label>
 
               @if (answers.approvalLevels === 'multi') {
                 <label class="field">
-                  <span>¿Cómo escalamos?</span>
-                  <input [(ngModel)]="answers.escalationCriteria" placeholder="Ej: monto, urgencia, área" />
+                  <span>{{ lang.currentLang() === 'es' ? '¿Cómo escalamos?' : 'How should we escalate?' }}</span>
+                  <input [(ngModel)]="answers.escalationCriteria" [placeholder]="lang.currentLang() === 'es' ? 'Ej: monto, urgencia, área' : 'Ex: amount, urgency, area'" />
                 </label>
               }
             }
@@ -89,81 +89,81 @@
         @case (3) {
           <div class="space-y-4">
             <label class="field">
-              <span>Enumera 3-5 pasos clave (separados por coma)</span>
-              <textarea [(ngModel)]="answers.mainSteps" rows="3" placeholder="Recibir, Revisar, Aprobar/Rechazar, Notificar"></textarea>
+              <span>{{ lang.currentLang() === 'es' ? 'Enumera 3-5 pasos clave (separados por coma)' : 'List 3-5 key steps (comma separated)' }}</span>
+              <textarea [(ngModel)]="answers.mainSteps" rows="3" [placeholder]="lang.currentLang() === 'es' ? 'Recibir, Revisar, Aprobar/Rechazar, Notificar' : 'Receive, Review, Approve/Reject, Notify'"></textarea>
             </label>
             <label class="field">
-              <span>¿Qué información necesitas?</span>
-              <input [(ngModel)]="answers.requiredData" placeholder="Ej: nombre, monto, fecha, motivo" />
+              <span>{{ lang.currentLang() === 'es' ? '¿Qué información necesitas?' : 'What information do you need?' }}</span>
+              <input [(ngModel)]="answers.requiredData" [placeholder]="lang.currentLang() === 'es' ? 'Ej: nombre, monto, fecha, motivo' : 'Ex: name, amount, date, reason'" />
             </label>
           </div>
         }
         @case (4) {
           <div class="space-y-4">
             <label class="field">
-              <span>¿Cuándo se toma una ruta distinta?</span>
-              <input [(ngModel)]="answers.conditionalRule" placeholder="Ej: si monto > 500" />
+              <span>{{ lang.currentLang() === 'es' ? '¿Cuándo se toma una ruta distinta?' : 'When should we take a different path?' }}</span>
+              <input [(ngModel)]="answers.conditionalRule" [placeholder]="lang.currentLang() === 'es' ? 'Ej: si monto > 500' : 'Ex: if amount > 500'" />
             </label>
             <label class="field">
-              <span>¿Qué debe pasar en ese caso?</span>
-              <input [(ngModel)]="answers.conditionalAction" placeholder="Ej: escalar a finanzas" />
+              <span>{{ lang.currentLang() === 'es' ? '¿Qué debe pasar en ese caso?' : 'What should happen in that case?' }}</span>
+              <input [(ngModel)]="answers.conditionalAction" [placeholder]="lang.currentLang() === 'es' ? 'Ej: escalar a finanzas' : 'Ex: escalate to finance'" />
             </label>
           </div>
         }
         @case (5) {
           <div class="space-y-4">
-            <span class="block text-sm font-semibold text-slate-700">¿Qué herramientas quieres integrar?</span>
+            <span class="block text-sm font-semibold text-slate-700">{{ lang.currentLang() === 'es' ? '¿Qué herramientas quieres integrar?' : 'Which tools do you want to integrate?' }}</span>
             <div class="chips">
               @for (integration of ['CRM', 'ERP', 'Email', 'Slack', 'Sheets']; track integration) {
                 <button type="button" (click)="toggleIntegration(integration)" [class.active]="answers.integrations.includes(integration)">{{ integration }}</button>
               }
             </div>
             <label class="field">
-              <span>¿Qué acción haremos en esas herramientas?</span>
-              <input [(ngModel)]="answers.integrationActions" placeholder="Ej: crear registro y avisar" />
+              <span>{{ lang.currentLang() === 'es' ? '¿Qué acción haremos en esas herramientas?' : 'What action should we do in those tools?' }}</span>
+              <input [(ngModel)]="answers.integrationActions" [placeholder]="lang.currentLang() === 'es' ? 'Ej: crear registro y avisar' : 'Ex: create record and notify'" />
             </label>
           </div>
         }
         @case (6) {
           <div class="space-y-4">
             <label class="field">
-              <span>¿Cómo sabrás que salió bien?</span>
-              <input [(ngModel)]="answers.kpi" placeholder="Ej: tiempo medio de aprobación" />
+              <span>{{ lang.currentLang() === 'es' ? '¿Cómo sabrás que salió bien?' : 'How will you know it succeeded?' }}</span>
+              <input [(ngModel)]="answers.kpi" [placeholder]="lang.currentLang() === 'es' ? 'Ej: tiempo medio de aprobación' : 'Ex: average approval time'" />
             </label>
             <label class="field">
-              <span>¿A quién notificamos al finalizar?</span>
-              <input [(ngModel)]="answers.notifyAudience" placeholder="Ej: solicitante y líder" />
+              <span>{{ lang.currentLang() === 'es' ? '¿A quién notificamos al finalizar?' : 'Who should we notify at the end?' }}</span>
+              <input [(ngModel)]="answers.notifyAudience" [placeholder]="lang.currentLang() === 'es' ? 'Ej: solicitante y líder' : 'Ex: requester and team lead'" />
             </label>
             <label class="check">
               <input type="checkbox" [(ngModel)]="answers.sensitiveProcess" />
-              <span>Incluye datos sensibles (finanzas o datos personales)</span>
+              <span>{{ lang.currentLang() === 'es' ? 'Incluye datos sensibles (finanzas o datos personales)' : 'Includes sensitive data (finance or personal data)' }}</span>
             </label>
           </div>
         }
         @case (7) {
           <div class="space-y-4">
             <label class="field">
-              <span>¿Cómo quieres empezar?</span>
+              <span>{{ lang.currentLang() === 'es' ? '¿Cómo quieres empezar?' : 'How do you want to start?' }}</span>
               <select [(ngModel)]="answers.mode">
-                <option value="recommended">Configuración recomendada (rápido)</option>
-                <option value="advanced">Personalización avanzada</option>
+                <option value="recommended">{{ lang.currentLang() === 'es' ? 'Configuración recomendada (rápido)' : 'Recommended setup (fast)' }}</option>
+                <option value="advanced">{{ lang.currentLang() === 'es' ? 'Personalización avanzada' : 'Advanced customization' }}</option>
               </select>
             </label>
             <div class="rounded-xl bg-indigo-50 border border-indigo-100 p-4 text-sm text-indigo-900">
-              Antes de finalizar, revisa el preview de la derecha con resumen, estructura y JSON.
+              {{ lang.currentLang() === 'es' ? 'Antes de finalizar, revisa el preview de la derecha con resumen, estructura y JSON.' : 'Before finishing, review the right-side preview with summary, structure, and JSON.' }}
             </div>
           </div>
         }
       }
 
       <div class="mt-8 flex items-center justify-between">
-        <button type="button" (click)="prev()" [disabled]="current() === 0" class="btn ghost">Anterior</button>
-        @if (current() < steps.length - 1) {
-          <button type="button" (click)="next()" [disabled]="!canContinue()" class="btn primary">Siguiente</button>
+        <button type="button" (click)="prev()" [disabled]="current() === 0" class="btn ghost">{{ lang.currentLang() === 'es' ? 'Anterior' : 'Previous' }}</button>
+        @if (current() < steps().length - 1) {
+          <button type="button" (click)="next()" [disabled]="!canContinue()" class="btn primary">{{ lang.currentLang() === 'es' ? 'Siguiente' : 'Next' }}</button>
         } @else {
           <div class="flex gap-2">
-            <button type="button" (click)="saveDraft()" [disabled]="loading()" class="btn ghost">Guardar borrador</button>
-            <button type="button" (click)="activateWorkflow()" [disabled]="loading()" class="btn primary">Activar workflow</button>
+            <button type="button" (click)="saveDraft()" [disabled]="loading()" class="btn ghost">{{ lang.currentLang() === 'es' ? 'Guardar borrador' : 'Save draft' }}</button>
+            <button type="button" (click)="activateWorkflow()" [disabled]="loading()" class="btn primary">{{ lang.currentLang() === 'es' ? 'Activar workflow' : 'Activate workflow' }}</button>
           </div>
         }
       </div>
@@ -171,32 +171,32 @@
 
     <aside class="space-y-4">
       <section class="panel">
-        <h2>Preview ejecutivo</h2>
+        <h2>{{ lang.currentLang() === 'es' ? 'Preview ejecutivo' : 'Executive preview' }}</h2>
         <p>
-          Cuando ocurra <strong>{{ generatedSpec().workflow.trigger.type }}</strong> desde <strong>{{ generatedSpec().workflow.trigger.source || 'fuente por definir' }}</strong>,
-          se ejecutarán <strong>{{ generatedSpec().workflow.steps.length }}</strong> pasos.
-          La regla principal será <strong>{{ generatedSpec().workflow.rules[0].when }}</strong> para <strong>{{ generatedSpec().workflow.rules[0].then }}</strong>.
+          {{ lang.currentLang() === 'es' ? 'Cuando ocurra' : 'When' }} <strong>{{ generatedSpec().workflow.trigger.type }}</strong> {{ lang.currentLang() === 'es' ? 'desde' : 'from' }} <strong>{{ generatedSpec().workflow.trigger.source || (lang.currentLang() === 'es' ? 'fuente por definir' : 'source TBD') }}</strong>,
+          {{ lang.currentLang() === 'es' ? 'se ejecutarán' : 'it will run' }} <strong>{{ generatedSpec().workflow.steps.length }}</strong> {{ lang.currentLang() === 'es' ? 'pasos' : 'steps' }}.
+          {{ lang.currentLang() === 'es' ? 'La regla principal será' : 'The main rule will be' }} <strong>{{ generatedSpec().workflow.rules[0].when }}</strong> {{ lang.currentLang() === 'es' ? 'para' : 'to' }} <strong>{{ generatedSpec().workflow.rules[0].then }}</strong>.
         </p>
       </section>
 
       <section class="panel">
-        <h2>Checklist antes de finalizar</h2>
+        <h2>{{ lang.currentLang() === 'es' ? 'Checklist antes de finalizar' : 'Checklist before finishing' }}</h2>
         <ul>
-          <li [class.ok]="!!answers.goal">Nombre del objetivo definido</li>
-          <li [class.ok]="generatedSpec().workflow.steps.length > 0">Pasos creados</li>
-          <li [class.ok]="answers.integrations.length > 0">Integraciones seleccionadas</li>
-          <li [class.ok]="!!answers.notifyAudience">Notificación final definida</li>
+          <li [class.ok]="!!answers.goal">{{ lang.currentLang() === 'es' ? 'Nombre del objetivo definido' : 'Goal name defined' }}</li>
+          <li [class.ok]="generatedSpec().workflow.steps.length > 0">{{ lang.currentLang() === 'es' ? 'Pasos creados' : 'Steps created' }}</li>
+          <li [class.ok]="answers.integrations.length > 0">{{ lang.currentLang() === 'es' ? 'Integraciones seleccionadas' : 'Integrations selected' }}</li>
+          <li [class.ok]="!!answers.notifyAudience">{{ lang.currentLang() === 'es' ? 'Notificación final definida' : 'Final notification defined' }}</li>
         </ul>
       </section>
 
       <section class="panel">
-        <h2>Simulación rápida</h2>
-        <p class="text-sm text-slate-600">Caso A: regla no cumple → ruta estándar.</p>
-        <p class="text-sm text-slate-600">Caso B: regla cumple → {{ answers.conditionalAction || 'ruta alternativa' }}.</p>
+        <h2>{{ lang.currentLang() === 'es' ? 'Simulación rápida' : 'Quick simulation' }}</h2>
+        <p class="text-sm text-slate-600">{{ lang.currentLang() === 'es' ? 'Caso A: regla no cumple → ruta estándar.' : 'Case A: rule does not match → standard path.' }}</p>
+        <p class="text-sm text-slate-600">{{ lang.currentLang() === 'es' ? 'Caso B: regla cumple →' : 'Case B: rule matches →' }} {{ answers.conditionalAction || (lang.currentLang() === 'es' ? 'ruta alternativa' : 'alternative path') }}.</p>
       </section>
 
       <section class="panel">
-        <h2>JSON generado</h2>
+        <h2>{{ lang.currentLang() === 'es' ? 'JSON generado' : 'Generated JSON' }}</h2>
         <pre>{{ generatedSpec() | json }}</pre>
       </section>
     </aside>

@@ -15,18 +15,30 @@
         
         <nav class="hidden md:flex items-center gap-1 ml-4">
           <a routerLink="/" routerLinkActive="bg-slate-100 text-indigo-600" [routerLinkActiveOptions]="{exact: true}" class="px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-indigo-600 transition-colors">
-            Dashboard
+            {{ t('nav.dashboard') }}
           </a>
           <a routerLink="/builder/new" routerLinkActive="bg-slate-100 text-indigo-600" class="px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-indigo-600 transition-colors">
-            New Process
+            {{ t('nav.newProcess') }}
           </a>
           <a routerLink="/wizard/new" routerLinkActive="bg-slate-100 text-indigo-600" class="px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-indigo-600 transition-colors">
-            Wizard
+            {{ t('nav.wizard') }}
           </a>
           <a routerLink="/insights" routerLinkActive="bg-slate-100 text-indigo-600" class="px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-indigo-600 transition-colors">
-            Business Insights
+            {{ t('nav.insights') }}
           </a>
         </nav>
+      </div>
+      <div class="flex items-center bg-white border border-slate-200 rounded-lg p-1 shadow-sm">
+        <button (click)="lang.setLanguage('en')"
+                [class]="lang.currentLang() === 'en' ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-500 hover:bg-slate-50'"
+                class="px-3 py-1.5 rounded-md text-xs font-bold transition-all uppercase tracking-wider">
+          EN
+        </button>
+        <button (click)="lang.setLanguage('es')"
+                [class]="lang.currentLang() === 'es' ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-500 hover:bg-slate-50'"
+                class="px-3 py-1.5 rounded-md text-xs font-bold transition-all uppercase tracking-wider">
+          ES
+        </button>
       </div>
     </div>
   </header>
@@ -42,12 +54,12 @@
             <path d="M25 10C15 10 5 18 5 25C5 32 13 38 20 38C27 38 35 32 40 25C45 18 53 10 60 10C67 10 75 16 75 23C75 30 67 38 60 38C53 38 45 30 40 23C35 16 27 10 20 10" 
                   fill="none" stroke="#00C4E9" stroke-width="8" stroke-linecap="round"/>
           </svg>
-          <span>&copy; {{ currentYear }} Broxel Process Builder.</span>
+          <span>&copy; {{ currentYear }} {{ t('footer.product') }}</span>
         </div>
         <div class="flex items-center gap-6 text-sm font-medium text-slate-500">
-          <a href="#" class="hover:text-indigo-600 transition-colors">Documentation</a>
-          <a href="#" class="hover:text-indigo-600 transition-colors">Support</a>
-          <a href="#" class="hover:text-indigo-600 transition-colors">Terms</a>
+          <a href="#" class="hover:text-indigo-600 transition-colors">{{ t('footer.documentation') }}</a>
+          <a href="#" class="hover:text-indigo-600 transition-colors">{{ t('footer.support') }}</a>
+          <a href="#" class="hover:text-indigo-600 transition-colors">{{ t('footer.terms') }}</a>
         </div>
       </div>
     </div>

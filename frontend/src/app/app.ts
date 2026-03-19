@@ -1,6 +1,7 @@
 import {ChangeDetectionStrategy, Component, inject} from '@angular/core';
 import {RouterOutlet, RouterLink, RouterLinkActive, Router} from '@angular/router';
 import { UxLevelService, UXLevel } from './ux-level.service';
+import { LanguageService } from './language.service';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.Eager,
@@ -12,6 +13,7 @@ import { UxLevelService, UXLevel } from './ux-level.service';
 export class App {
   router = inject(Router);
   uxLevel = inject(UxLevelService);
+  lang = inject(LanguageService);
   currentYear = new Date().getFullYear();
 
   setUxLevel(level: string) {
@@ -26,5 +28,9 @@ export class App {
 
   isRunningWorkload() {
     return this.router.url.includes('/run/');
+  }
+
+  t(key: string): string {
+    return this.lang.t(key);
   }
 }
