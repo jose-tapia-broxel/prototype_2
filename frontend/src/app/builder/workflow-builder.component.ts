@@ -9,6 +9,7 @@ import { WorkflowDefinition, FieldType, FormField, WorkflowNavigation, WorkflowS
 import { LanguageService } from '../language.service';
 import { UxLevelService } from './ux-level.service';
 import { NaturalLanguageWorkflowService, IntentAmbiguity } from '../nl-workflow.service';
+import { MonacoCodeEditorComponent } from '../shared/monaco-code-editor.component';
 
 interface DraggableField {
   type: FieldType;
@@ -20,7 +21,7 @@ interface DraggableField {
 @Component({
   selector: 'app-workflow-builder',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule, RouterLink, DragDropModule],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, RouterLink, DragDropModule, MonacoCodeEditorComponent],
   templateUrl: './workflow-builder.component.html',
   styleUrl: './workflow-builder.component.css',
   host: { class: 'flex-1 flex flex-col' }
@@ -74,9 +75,9 @@ export class WorkflowBuilderComponent implements OnInit {
   customFields = signal<CustomFieldDefinition[]>([]);
   editingCustomField = signal<CustomFieldDefinition | null>(null);
   activeCustomFieldTab = signal<'html' | 'css' | 'js'>('html');
-  htmlTheme = signal<'night' | 'light' | 'ocean'>('night');
-  cssTheme = signal<'night' | 'light' | 'sunset'>('night');
-  jsTheme = signal<'night' | 'light' | 'matrix'>('night');
+  htmlTheme = signal<'night' | 'light' | 'ocean' | 'monokai' | 'intelligence'>('night');
+  cssTheme = signal<'night' | 'light' | 'sunset' | 'monokai' | 'intelligence'>('night');
+  jsTheme = signal<'night' | 'light' | 'matrix' | 'monokai' | 'intelligence'>('night');
 
   showToolboxSidebar = signal(true);
   showPropertiesSidebar = signal(true);
@@ -661,18 +662,32 @@ export class WorkflowBuilderComponent implements OnInit {
     if (kind === 'html') {
       if (selectedTheme === 'light') return 'bg-slate-100 text-slate-800';
       if (selectedTheme === 'ocean') return 'bg-sky-950 text-cyan-200';
+      if (selectedTheme === 'monokai') return 'bg-[#272822] text-[#f8f8f2]';
+      if (selectedTheme === 'intelligence') return 'bg-[#0f172a] text-[#93c5fd]';
       return 'bg-slate-950 text-indigo-300';
     }
 
     if (kind === 'css') {
       if (selectedTheme === 'light') return 'bg-zinc-100 text-zinc-800';
       if (selectedTheme === 'sunset') return 'bg-rose-950 text-rose-200';
+      if (selectedTheme === 'monokai') return 'bg-[#272822] text-[#a6e22e]';
+      if (selectedTheme === 'intelligence') return 'bg-[#0b1120] text-[#67e8f9]';
       return 'bg-slate-950 text-pink-300';
     }
 
     if (selectedTheme === 'light') return 'bg-neutral-100 text-neutral-800';
     if (selectedTheme === 'matrix') return 'bg-black text-emerald-400';
+    if (selectedTheme === 'monokai') return 'bg-[#272822] text-[#fd971f]';
+    if (selectedTheme === 'intelligence') return 'bg-[#020617] text-[#5eead4]';
     return 'bg-slate-950 text-emerald-400';
+  }
+
+  getMonacoTheme(kind: 'html' | 'css' | 'js'): string {
+    const selectedTheme = kind === 'html' ? this.htmlTheme() : kind === 'css' ? this.cssTheme() : this.jsTheme();
+    if (selectedTheme === 'light') return 'vs';
+    if (selectedTheme === 'monokai') return 'app-monokai';
+    if (selectedTheme === 'intelligence') return 'app-intelligence';
+    return 'vs-dark';
   }
 
   openLivePreview() {
