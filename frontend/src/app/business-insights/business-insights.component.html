@@ -1,48 +1,48 @@
 <div class="max-w-7xl mx-auto p-6 py-8 space-y-8">
   <header class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
-    <h1 class="text-3xl font-bold text-slate-900">Business Insights Hub</h1>
-    <p class="text-slate-600 mt-2">From technical telemetry to business decisions: prioritize activation, conversion, retention and expansion.</p>
+    <h1 class="text-3xl font-bold text-slate-900">{{ lang.currentLang() === 'es' ? 'Hub de Insights de Negocio' : 'Business Insights Hub' }}</h1>
+    <p class="text-slate-600 mt-2">{{ lang.currentLang() === 'es' ? 'De telemetría técnica a decisiones de negocio: prioriza activación, conversión, retención y expansión.' : 'From technical telemetry to business decisions: prioritize activation, conversion, retention and expansion.' }}</p>
   </header>
 
   <section class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-    @for (kpi of kpis; track kpi.name) {
+    @for (kpi of kpis; track kpi.value + t(kpi.name)) {
       <article class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
-        <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">{{ kpi.name }}</p>
+        <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">{{ t(kpi.name) }}</p>
         <p class="text-2xl font-bold mt-2 text-slate-900">{{ kpi.value }}</p>
-        <p class="text-sm text-emerald-600 mt-1">{{ kpi.trend }}</p>
-        <p class="text-sm text-slate-600 mt-3">{{ kpi.insight }}</p>
+        <p class="text-sm text-emerald-600 mt-1">{{ t(kpi.trend) }}</p>
+        <p class="text-sm text-slate-600 mt-3">{{ t(kpi.insight) }}</p>
       </article>
     }
   </section>
 
   <section class="grid grid-cols-1 xl:grid-cols-2 gap-6">
     <article class="panel">
-      <h2>Funnel A · Acquisition → Value</h2>
-      @for (step of acquisitionToValue; track step.stage) {
+      <h2>{{ lang.currentLang() === 'es' ? 'Embudo A · Adquisición → Valor' : 'Funnel A · Acquisition → Value' }}</h2>
+      @for (step of acquisitionToValue; track step.conversion + t(step.stage)) {
         <div class="funnel-row">
           <div>
-            <p class="font-semibold text-slate-800">{{ step.stage }}</p>
-            <p class="text-xs text-slate-500">Top drop-off: {{ step.topDropOff }}</p>
+            <p class="font-semibold text-slate-800">{{ t(step.stage) }}</p>
+            <p class="text-xs text-slate-500">{{ lang.currentLang() === 'es' ? 'Mayor abandono:' : 'Top drop-off:' }} {{ t(step.topDropOff) }}</p>
           </div>
           <div class="text-right">
             <p class="font-semibold text-slate-900">{{ step.conversion }}%</p>
-            <p class="text-xs text-slate-500">Median {{ step.medianHours }}h</p>
+            <p class="text-xs text-slate-500">{{ lang.currentLang() === 'es' ? 'Mediana' : 'Median' }} {{ step.medianHours }}h</p>
           </div>
         </div>
       }
     </article>
 
     <article class="panel">
-      <h2>Funnel B · Value → Monetization</h2>
-      @for (step of valueToMonetization; track step.stage) {
+      <h2>{{ lang.currentLang() === 'es' ? 'Embudo B · Valor → Monetización' : 'Funnel B · Value → Monetization' }}</h2>
+      @for (step of valueToMonetization; track step.conversion + t(step.stage)) {
         <div class="funnel-row">
           <div>
-            <p class="font-semibold text-slate-800">{{ step.stage }}</p>
-            <p class="text-xs text-slate-500">Top drop-off: {{ step.topDropOff }}</p>
+            <p class="font-semibold text-slate-800">{{ t(step.stage) }}</p>
+            <p class="text-xs text-slate-500">{{ lang.currentLang() === 'es' ? 'Mayor abandono:' : 'Top drop-off:' }} {{ t(step.topDropOff) }}</p>
           </div>
           <div class="text-right">
             <p class="font-semibold text-slate-900">{{ step.conversion }}%</p>
-            <p class="text-xs text-slate-500">Median {{ step.medianHours }}h</p>
+            <p class="text-xs text-slate-500">{{ lang.currentLang() === 'es' ? 'Mediana' : 'Median' }} {{ step.medianHours }}h</p>
           </div>
         </div>
       }
@@ -51,34 +51,34 @@
 
   <section class="grid grid-cols-1 xl:grid-cols-2 gap-6">
     <article class="panel">
-      <h2>Automatic Friction Detection</h2>
-      <p class="text-sm text-slate-600 mb-3">Friction score = conversion drop (35%) + p90 time increase (25%) + error impact (20%) + frustration behavior (20%).</p>
+      <h2>{{ lang.currentLang() === 'es' ? 'Detección automática de fricción' : 'Automatic Friction Detection' }}</h2>
+      <p class="text-sm text-slate-600 mb-3">{{ lang.currentLang() === 'es' ? 'Puntaje de fricción = caída de conversión (35%) + aumento p90 de tiempo (25%) + impacto de errores (20%) + comportamiento de frustración (20%).' : 'Friction score = conversion drop (35%) + p90 time increase (25%) + error impact (20%) + frustration behavior (20%).' }}</p>
       <ul class="list-disc pl-5 text-sm text-slate-700 space-y-2">
-        @for (signal of frictionSignals; track signal) {
-          <li>{{ signal }}</li>
+        @for (signal of frictionSignals; track t(signal)) {
+          <li>{{ t(signal) }}</li>
         }
       </ul>
     </article>
 
     <article class="panel">
-      <h2>Data Overload Control</h2>
+      <h2>{{ lang.currentLang() === 'es' ? 'Control de sobrecarga de datos' : 'Data Overload Control' }}</h2>
       <ul class="list-disc pl-5 text-sm text-slate-700 space-y-2">
-        @for (rule of dataOverloadRules; track rule) {
-          <li>{{ rule }}</li>
+        @for (rule of dataOverloadRules; track t(rule)) {
+          <li>{{ t(rule) }}</li>
         }
       </ul>
     </article>
   </section>
 
   <section class="panel">
-    <h2>Actionable Recommendations (RICE ordered)</h2>
+    <h2>{{ lang.currentLang() === 'es' ? 'Recomendaciones accionables (ordenadas por RICE)' : 'Actionable Recommendations (RICE ordered)' }}</h2>
     <div class="space-y-3 mt-3">
-      @for (rec of recommendations; track rec.insight) {
+      @for (rec of recommendations; track rec.rice) {
         <article class="border border-slate-200 rounded-xl p-4 bg-slate-50">
-          <p class="font-semibold text-slate-900">{{ rec.insight }}</p>
-          <p class="text-sm mt-1"><span class="font-medium">Probable cause:</span> {{ rec.probableCause }}</p>
-          <p class="text-sm mt-1"><span class="font-medium">Action:</span> {{ rec.action }}</p>
-          <p class="text-sm mt-1"><span class="font-medium">Expected impact:</span> {{ rec.impact }}</p>
+          <p class="font-semibold text-slate-900">{{ t(rec.insight) }}</p>
+          <p class="text-sm mt-1"><span class="font-medium">{{ lang.currentLang() === 'es' ? 'Causa probable:' : 'Probable cause:' }}</span> {{ t(rec.probableCause) }}</p>
+          <p class="text-sm mt-1"><span class="font-medium">{{ lang.currentLang() === 'es' ? 'Acción:' : 'Action:' }}</span> {{ t(rec.action) }}</p>
+          <p class="text-sm mt-1"><span class="font-medium">{{ lang.currentLang() === 'es' ? 'Impacto esperado:' : 'Expected impact:' }}</span> {{ t(rec.impact) }}</p>
           <p class="text-xs text-indigo-700 mt-2 font-semibold">RICE: {{ rec.rice }}</p>
         </article>
       }
