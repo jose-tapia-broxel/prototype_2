@@ -8,14 +8,14 @@ let workflows: WorkflowDefinition[] = [
     id: '1',
     name: { en: 'Broxel Basic Enrollment', es: 'Enrolamiento Básico Broxel' },
     description: { en: 'Start-to-finish enrollment inspired by Broxel’s basic registration flow.', es: 'Enrolamiento de inicio a fin inspirado en el flujo básico de registro de Broxel.' },
-    totalSteps: 6,
-    successPath: 'User completes email, identity, address, biometrics, legal terms, and receives confirmation.',
+    totalSteps: 7,
+    successPath: 'User completes email, OTP, identity, address, biometrics, legal terms, and receives confirmation.',
     errorHandlingPath: 'If required data is missing, keep applicant on current step and show validation feedback.',
     steps: [
       {
         id: 'step_email',
         title: { en: 'Email Registration', es: 'Registro de Correo' },
-        navigation: { nextStep: 'step_identity' },
+        navigation: { nextStep: 'step_otp' },
         layout: [
           { id: 'email', type: 'email', label: { en: 'Personal Email', es: 'Correo Electrónico Personal' }, required: true },
           { id: 'confirmEmail', type: 'email', label: { en: 'Confirm Email', es: 'Confirmar Correo Electrónico' }, required: true },
@@ -25,6 +25,21 @@ let workflows: WorkflowDefinition[] = [
           { id: 'email', type: 'email', label: { en: 'Personal Email', es: 'Correo Electrónico Personal' }, required: true },
           { id: 'confirmEmail', type: 'email', label: { en: 'Confirm Email', es: 'Confirmar Correo Electrónico' }, required: true },
           { id: 'emailOwnership', type: 'checkbox', label: { en: 'I confirm this email belongs to me', es: 'Confirmo que este correo me pertenece' }, required: true }
+        ]
+      },
+      {
+        id: 'step_otp',
+        title: { en: 'OTP Validation', es: 'Validación OTP' },
+        navigation: { nextStep: 'step_identity' },
+        layout: [
+          { id: 'otpCode', type: 'shortText', label: { en: '6-digit OTP Code', es: 'Código OTP de 6 dígitos' }, required: true },
+          { id: 'otpChannel', type: 'dropdown', label: { en: 'Delivery Channel', es: 'Canal de Entrega' }, required: true, options: ['Email', 'SMS'] },
+          { id: 'otpConfirmed', type: 'checkbox', label: { en: 'I validated my OTP code', es: 'Ya validé mi código OTP' }, required: true }
+        ],
+        fields: [
+          { id: 'otpCode', type: 'shortText', label: { en: '6-digit OTP Code', es: 'Código OTP de 6 dígitos' }, required: true },
+          { id: 'otpChannel', type: 'dropdown', label: { en: 'Delivery Channel', es: 'Canal de Entrega' }, required: true, options: ['Email', 'SMS'] },
+          { id: 'otpConfirmed', type: 'checkbox', label: { en: 'I validated my OTP code', es: 'Ya validé mi código OTP' }, required: true }
         ]
       },
       {

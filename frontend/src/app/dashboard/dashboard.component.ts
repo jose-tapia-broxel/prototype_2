@@ -107,7 +107,7 @@ export class DashboardComponent implements OnInit {
   generateSample() {
     const sample: Partial<WorkflowDefinition> = {
       name: { en: 'Broxel Basic Enrollment', es: 'Enrolamiento Básico Broxel' },
-      description: { en: 'A start-to-finish onboarding inspired by Broxel’s basic enrollment flow: email, identity, address, biometrics, legal terms, and confirmation.', es: 'Un onboarding de principio a fin inspirado en el flujo básico de enrolamiento de Broxel: correo, identidad, domicilio, biometría, legales y confirmación.' },
+      description: { en: 'A start-to-finish onboarding inspired by Broxel’s basic enrollment flow: email, OTP, identity, address, biometrics, legal terms, and confirmation.', es: 'Un onboarding de principio a fin inspirado en el flujo básico de enrolamiento de Broxel: correo, OTP, identidad, domicilio, biometría, legales y confirmación.' },
       category: 'Onboarding',
       steps: [
         {
@@ -120,12 +120,24 @@ export class DashboardComponent implements OnInit {
             { id: 'confirmEmail', type: 'email', label: { en: 'Confirm Email', es: 'Confirmar Correo Electrónico' }, required: true, placeholder: { en: 'Repeat your email', es: 'Repite tu correo' }, position: { x: 20, y: 180 }, dimensions: { width: 320, height: 45 } },
             { id: 'emailOwnership', type: 'checkbox', label: { en: 'I confirm this email belongs to me', es: 'Confirmo que este correo me pertenece' }, required: true, position: { x: 20, y: 250 }, dimensions: { width: 320, height: 30 } }
           ],
+          navigation: { nextStep: 'step_otp' }
+        },
+        {
+          id: 'step_otp',
+          title: { en: 'OTP Validation', es: 'Validación OTP' },
+          position: { x: 325, y: 100 },
+          dimensions: { width: 360, height: 650 },
+          fields: [
+            { id: 'otpCode', type: 'shortText', label: { en: '6-digit OTP Code', es: 'Código OTP de 6 dígitos' }, required: true, placeholder: { en: '123456', es: '123456' }, position: { x: 20, y: 100 }, dimensions: { width: 320, height: 45 } },
+            { id: 'otpChannel', type: 'dropdown', label: { en: 'Delivery Channel', es: 'Canal de Entrega' }, required: true, options: ['Email', 'SMS'], position: { x: 20, y: 180 }, dimensions: { width: 320, height: 45 } },
+            { id: 'otpConfirmed', type: 'checkbox', label: { en: 'I validated my OTP code', es: 'Ya validé mi código OTP' }, required: true, position: { x: 20, y: 250 }, dimensions: { width: 320, height: 30 } }
+          ],
           navigation: { nextStep: 'step_identity' }
         },
         {
           id: 'step_identity',
           title: { en: 'Identity Data', es: 'Datos de Identidad' },
-          position: { x: 550, y: 100 },
+          position: { x: 775, y: 100 },
           dimensions: { width: 360, height: 650 },
           fields: [
             { id: 'fullName', type: 'shortText', label: { en: 'Full Legal Name', es: 'Nombre Completo' }, required: true, position: { x: 20, y: 100 }, dimensions: { width: 320, height: 45 } },
@@ -137,7 +149,7 @@ export class DashboardComponent implements OnInit {
         {
           id: 'step_address',
           title: { en: 'Address', es: 'Domicilio' },
-          position: { x: 1000, y: 100 },
+          position: { x: 1225, y: 100 },
           dimensions: { width: 360, height: 650 },
           fields: [
             { id: 'zipCode', type: 'shortText', label: { en: 'ZIP Code', es: 'Código Postal' }, required: true, position: { x: 20, y: 100 }, dimensions: { width: 320, height: 45 } },
@@ -149,7 +161,7 @@ export class DashboardComponent implements OnInit {
         {
           id: 'step_biometrics',
           title: { en: 'Biometrics', es: 'Biometría' },
-          position: { x: 1450, y: 100 },
+          position: { x: 1675, y: 100 },
           dimensions: { width: 360, height: 650 },
           fields: [
             { id: 'idFront', type: 'imageDropzone', label: { en: 'Upload ID Front', es: 'Subir Frente de Identificación' }, required: true, position: { x: 20, y: 100 }, dimensions: { width: 320, height: 140 } },
@@ -161,7 +173,7 @@ export class DashboardComponent implements OnInit {
         {
           id: 'step_legales',
           title: { en: 'Legal Terms', es: 'Legales' },
-          position: { x: 1900, y: 100 },
+          position: { x: 2125, y: 100 },
           dimensions: { width: 360, height: 650 },
           fields: [
             { id: 'privacyNotice', type: 'checkbox', label: { en: 'I accept the privacy notice', es: 'Acepto el aviso de privacidad' }, required: true, position: { x: 20, y: 120 }, dimensions: { width: 320, height: 30 } },
@@ -173,7 +185,7 @@ export class DashboardComponent implements OnInit {
         {
           id: 'step_confirmation',
           title: { en: 'Confirmation', es: 'Confirmación' },
-          position: { x: 2350, y: 100 },
+          position: { x: 2575, y: 100 },
           dimensions: { width: 360, height: 650 },
           fields: [
             { id: 'enrollmentMessage', type: 'message', label: { en: 'Your enrollment request is complete and in validation.', es: 'Tu solicitud de enrolamiento fue completada y está en validación.' }, required: false, position: { x: 20, y: 140 }, dimensions: { width: 320, height: 120 } },
