@@ -89,6 +89,7 @@ export class WorkflowBuilderComponent implements OnInit {
   connectingFrom = signal<string | null>(null);
   hoveredTargetStep = signal<string | null>(null);
   currentMousePos = signal({ x: 0, y: 0 });
+  private readonly connectorOffset = 16;
 
   computedConnections = computed(() => {
     const conns: { id: string; path: string; startX: number; startY: number; endX: number; endY: number }[] = [];
@@ -96,9 +97,9 @@ export class WorkflowBuilderComponent implements OnInit {
       if (step.navigation?.nextStep) {
         const target = this.steps.find(s => s.id === step.navigation!.nextStep);
         if (target) {
-          const startX = (step.position?.x || 0) + (step.dimensions?.width || 360);
+          const startX = (step.position?.x || 0) + (step.dimensions?.width || 360) + this.connectorOffset;
           const startY = (step.position?.y || 0) + ((step.dimensions?.height || 650) / 2);
-          const endX = (target.position?.x || 0);
+          const endX = (target.position?.x || 0) - this.connectorOffset;
           const endY = (target.position?.y || 0) + ((target.dimensions?.height || 650) / 2);
 
           const distanceX = Math.abs(endX - startX);
@@ -127,7 +128,7 @@ export class WorkflowBuilderComponent implements OnInit {
     const source = this.steps.find(s => s.id === this.connectingFrom());
     if (!source) return '';
     
-    const startX = (source.position?.x || 0) + (source.dimensions?.width || 360);
+    const startX = (source.position?.x || 0) + (source.dimensions?.width || 360) + this.connectorOffset;
     const startY = (source.position?.y || 0) + ((source.dimensions?.height || 650) / 2);
     
     if (!isPlatformBrowser(this.platformId)) return '';
