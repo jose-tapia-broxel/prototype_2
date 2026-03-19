@@ -106,30 +106,92 @@ export class DashboardComponent implements OnInit {
 
   generateSample() {
     const sample: Partial<WorkflowDefinition> = {
-      name: { en: 'Customer Feedback Loop', es: 'Ciclo de Retroalimentación del Cliente' },
-      description: { en: 'A multi-step process to gather and route customer feedback.', es: 'Un proceso de varios pasos para recopilar y dirigir la retroalimentación del cliente.' },
-      category: 'Customer Success',
+      name: { en: 'Broxel Basic Enrollment', es: 'Enrolamiento Básico Broxel' },
+      description: { en: 'A start-to-finish onboarding inspired by Broxel’s basic enrollment flow: email, OTP, identity, address, biometrics, legal terms, and confirmation.', es: 'Un onboarding de principio a fin inspirado en el flujo básico de enrolamiento de Broxel: correo, OTP, identidad, domicilio, biometría, legales y confirmación.' },
+      category: 'Onboarding',
       steps: [
         {
-          id: 'step_1',
-          title: { en: 'Initial Rating', es: 'Calificación Inicial' },
+          id: 'step_email',
+          title: { en: 'Email Registration', es: 'Registro de Correo' },
           position: { x: 100, y: 100 },
           dimensions: { width: 360, height: 650 },
           fields: [
-            { id: 'rating', type: 'dropdown', label: { en: 'How likely are you to recommend us?', es: '¿Qué tan probable es que nos recomiendes?' }, required: true, options: ['1 - Not Likely', '2', '3', '4', '5 - Very Likely'], position: { x: 20, y: 100 }, dimensions: { width: 320, height: 45 } },
-            { id: 'comment', type: 'longText', label: { en: 'Why did you give this score?', es: '¿Por qué diste esta puntuación?' }, required: false, position: { x: 20, y: 180 }, dimensions: { width: 320, height: 120 } }
+            { id: 'email', type: 'email', label: { en: 'Personal Email', es: 'Correo Electrónico Personal' }, required: true, placeholder: { en: 'name@example.com', es: 'nombre@correo.com' }, position: { x: 20, y: 100 }, dimensions: { width: 320, height: 45 } },
+            { id: 'confirmEmail', type: 'email', label: { en: 'Confirm Email', es: 'Confirmar Correo Electrónico' }, required: true, placeholder: { en: 'Repeat your email', es: 'Repite tu correo' }, position: { x: 20, y: 180 }, dimensions: { width: 320, height: 45 } },
+            { id: 'emailOwnership', type: 'checkbox', label: { en: 'I confirm this email belongs to me', es: 'Confirmo que este correo me pertenece' }, required: true, position: { x: 20, y: 250 }, dimensions: { width: 320, height: 30 } }
           ],
-          navigation: { nextStep: 'step_2' }
+          navigation: { nextStep: 'step_otp' }
         },
         {
-          id: 'step_2',
-          title: { en: 'Contact Info', es: 'Información de Contacto' },
-          position: { x: 550, y: 100 },
+          id: 'step_otp',
+          title: { en: 'OTP Validation', es: 'Validación OTP' },
+          position: { x: 325, y: 100 },
           dimensions: { width: 360, height: 650 },
           fields: [
-            { id: 'email', type: 'email', label: { en: 'Your Email', es: 'Tu Correo Electrónico' }, required: true, position: { x: 20, y: 100 }, dimensions: { width: 320, height: 45 } },
-            { id: 'followup', type: 'checkbox', label: { en: 'Can we contact you for more details?', es: '¿Podemos contactarte para más detalles?' }, required: false, position: { x: 20, y: 180 }, dimensions: { width: 320, height: 30 } }
-          ]
+            { id: 'otpCode', type: 'shortText', label: { en: '6-digit OTP Code', es: 'Código OTP de 6 dígitos' }, required: true, placeholder: { en: '123456', es: '123456' }, position: { x: 20, y: 100 }, dimensions: { width: 320, height: 45 } },
+            { id: 'otpChannel', type: 'dropdown', label: { en: 'Delivery Channel', es: 'Canal de Entrega' }, required: true, options: ['Email', 'SMS'], position: { x: 20, y: 180 }, dimensions: { width: 320, height: 45 } },
+            { id: 'otpConfirmed', type: 'checkbox', label: { en: 'I validated my OTP code', es: 'Ya validé mi código OTP' }, required: true, position: { x: 20, y: 250 }, dimensions: { width: 320, height: 30 } }
+          ],
+          navigation: { nextStep: 'step_identity' }
+        },
+        {
+          id: 'step_identity',
+          title: { en: 'Identity Data', es: 'Datos de Identidad' },
+          position: { x: 775, y: 100 },
+          dimensions: { width: 360, height: 650 },
+          fields: [
+            { id: 'fullName', type: 'shortText', label: { en: 'Full Legal Name', es: 'Nombre Completo' }, required: true, position: { x: 20, y: 100 }, dimensions: { width: 320, height: 45 } },
+            { id: 'curp', type: 'shortText', label: { en: 'CURP / Government ID', es: 'CURP / Identificación Oficial' }, required: true, position: { x: 20, y: 180 }, dimensions: { width: 320, height: 45 } },
+            { id: 'birthDate', type: 'shortText', label: { en: 'Date of Birth (DD/MM/YYYY)', es: 'Fecha de Nacimiento (DD/MM/AAAA)' }, required: true, position: { x: 20, y: 260 }, dimensions: { width: 320, height: 45 } }
+          ],
+          navigation: { nextStep: 'step_address' }
+        },
+        {
+          id: 'step_address',
+          title: { en: 'Address', es: 'Domicilio' },
+          position: { x: 1225, y: 100 },
+          dimensions: { width: 360, height: 650 },
+          fields: [
+            { id: 'zipCode', type: 'shortText', label: { en: 'ZIP Code', es: 'Código Postal' }, required: true, position: { x: 20, y: 100 }, dimensions: { width: 320, height: 45 } },
+            { id: 'street', type: 'shortText', label: { en: 'Street and Number', es: 'Calle y Número' }, required: true, position: { x: 20, y: 180 }, dimensions: { width: 320, height: 45 } },
+            { id: 'city', type: 'shortText', label: { en: 'City', es: 'Ciudad' }, required: true, position: { x: 20, y: 260 }, dimensions: { width: 320, height: 45 } }
+          ],
+          navigation: { nextStep: 'step_biometrics' }
+        },
+        {
+          id: 'step_biometrics',
+          title: { en: 'Biometrics', es: 'Biometría' },
+          position: { x: 1675, y: 100 },
+          dimensions: { width: 360, height: 650 },
+          fields: [
+            { id: 'idFront', type: 'imageDropzone', label: { en: 'Upload ID Front', es: 'Subir Frente de Identificación' }, required: true, position: { x: 20, y: 100 }, dimensions: { width: 320, height: 140 } },
+            { id: 'idBack', type: 'imageDropzone', label: { en: 'Upload ID Back', es: 'Subir Reverso de Identificación' }, required: true, position: { x: 20, y: 260 }, dimensions: { width: 320, height: 140 } },
+            { id: 'selfie', type: 'imageDropzone', label: { en: 'Take or Upload Selfie', es: 'Tomar o Subir Selfie' }, required: true, position: { x: 20, y: 420 }, dimensions: { width: 320, height: 140 } }
+          ],
+          navigation: { nextStep: 'step_legales' }
+        },
+        {
+          id: 'step_legales',
+          title: { en: 'Legal Terms', es: 'Legales' },
+          position: { x: 2125, y: 100 },
+          dimensions: { width: 360, height: 650 },
+          fields: [
+            { id: 'privacyNotice', type: 'checkbox', label: { en: 'I accept the privacy notice', es: 'Acepto el aviso de privacidad' }, required: true, position: { x: 20, y: 120 }, dimensions: { width: 320, height: 30 } },
+            { id: 'terms', type: 'checkbox', label: { en: 'I accept terms and conditions', es: 'Acepto términos y condiciones' }, required: true, position: { x: 20, y: 180 }, dimensions: { width: 320, height: 30 } },
+            { id: 'dataConsent', type: 'checkbox', label: { en: 'I authorize identity validation', es: 'Autorizo validación de identidad' }, required: true, position: { x: 20, y: 240 }, dimensions: { width: 320, height: 30 } }
+          ],
+          navigation: { nextStep: 'step_confirmation' }
+        },
+        {
+          id: 'step_confirmation',
+          title: { en: 'Confirmation', es: 'Confirmación' },
+          position: { x: 2575, y: 100 },
+          dimensions: { width: 360, height: 650 },
+          fields: [
+            { id: 'enrollmentMessage', type: 'message', label: { en: 'Your enrollment request is complete and in validation.', es: 'Tu solicitud de enrolamiento fue completada y está en validación.' }, required: false, position: { x: 20, y: 140 }, dimensions: { width: 320, height: 120 } },
+            { id: 'folio', type: 'shortText', label: { en: 'Reference Folio', es: 'Folio de Referencia' }, required: false, defaultValue: 'BROX-ENR-0001', position: { x: 20, y: 300 }, dimensions: { width: 320, height: 45 } }
+          ],
+          navigation: { nextStep: null }
         }
       ]
     };
@@ -153,9 +215,9 @@ export class DashboardComponent implements OnInit {
       error: () => {
         // Mock data for development when API is not available
         this.applications.set([
-          { id: 'app_1', organizationId: 'org_1', appKey: 'onboarding', name: 'Employee Onboarding' },
-          { id: 'app_2', organizationId: 'org_1', appKey: 'feedback', name: 'Customer Feedback' },
-          { id: 'app_3', organizationId: 'org_1', appKey: 'expense', name: 'Expense Approval' }
+          { id: 'app_1', organizationId: 'org_1', appKey: 'broxel_onboarding', name: 'Broxel Customer Onboarding' },
+          { id: 'app_2', organizationId: 'org_1', appKey: 'merchant_onboarding', name: 'Merchant Onboarding' },
+          { id: 'app_3', organizationId: 'org_1', appKey: 'wallet_onboarding', name: 'Wallet Activation Onboarding' }
         ]);
       }
     });
@@ -200,8 +262,8 @@ export class DashboardComponent implements OnInit {
             contextJson: {},
             startedAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
-            workflowName: 'Employee Onboarding',
-            applicationName: 'HR System'
+            workflowName: 'Broxel Customer Onboarding',
+            applicationName: 'Broxel Onboarding Hub'
           },
           {
             id: 'inst_2',
@@ -214,8 +276,8 @@ export class DashboardComponent implements OnInit {
             startedAt: new Date(Date.now() - 86400000).toISOString(),
             endedAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
-            workflowName: 'Customer Feedback',
-            applicationName: 'CRM'
+            workflowName: 'Merchant Onboarding',
+            applicationName: 'Partner Portal'
           },
           {
             id: 'inst_3',
@@ -227,8 +289,8 @@ export class DashboardComponent implements OnInit {
             contextJson: {},
             startedAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
-            workflowName: 'Expense Approval',
-            applicationName: 'Finance'
+            workflowName: 'Wallet Activation Onboarding',
+            applicationName: 'Wallet Platform'
           }
         ]);
       }
