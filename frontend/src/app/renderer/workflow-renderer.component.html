@@ -11,7 +11,9 @@
           </a>
           <div>
             <h1 class="text-xl font-bold text-slate-900">{{ getLocalized(workflow()?.name) }}</h1>
-            <p class="text-xs text-slate-500">{{ getLocalized(workflow()?.description) }}</p>
+            @if (showExecutionExplanations()) {
+              <p class="text-xs text-slate-500">{{ getLocalized(workflow()?.description) }}</p>
+            }
           </div>
         </div>
 
@@ -30,6 +32,14 @@
         </div>
 
         <div class="flex items-center gap-2">
+          <button (click)="showExecutionExplanations.set(!showExecutionExplanations())"
+                  class="px-3 py-2 rounded-xl border border-slate-200 shadow-sm transition-all bg-white hover:bg-slate-50 text-slate-500 hover:text-indigo-600 text-[10px] font-bold uppercase tracking-widest"
+                  [class.bg-indigo-600]="showExecutionExplanations()"
+                  [class.text-white]="showExecutionExplanations()"
+                  [class.border-indigo-600]="showExecutionExplanations()"
+                  [class.hover:bg-indigo-700]="showExecutionExplanations()">
+            {{ showExecutionExplanations() ? 'Hide explanations' : 'Show explanations' }}
+          </button>
           <div class="flex items-center bg-white p-1 rounded-xl border border-slate-200 shadow-sm">
             <button (click)="lang.setLanguage('en')" 
                     [class.bg-indigo-600]="lang.currentLang() === 'en'"
@@ -75,6 +85,7 @@
       </div>
     }
 
+    @if (showExecutionExplanations()) {
     <div class="max-w-5xl mx-auto mb-6 w-full bg-white border border-slate-200 rounded-2xl p-4 shadow-sm">
       <div class="flex flex-col md:flex-row md:items-center gap-3">
         <div class="flex-1">
@@ -82,7 +93,7 @@
           <p class="text-sm text-slate-600">Pregunta por qué un campo no aparece o por qué una regla no se activa.</p>
         </div>
         <div class="flex flex-1 gap-2">
-          <select #explainTarget class="flex-1 px-3 py-2 border border-slate-200 rounded-xl text-sm">
+          <select #explainTarget class="flex-1 px-3 py-2 border border-slate-200 rounded-xl text-sm" aria-label="Select explainability target">
             @for (item of availableExplainabilityTargets(); track item.id) {
               <option [value]="item.id">{{ item.label }}</option>
             }
@@ -98,23 +109,16 @@
           <p class="text-xs text-indigo-700 font-bold uppercase tracking-widest">Confianza: {{ explainabilityResult()?.confidenceLabel }}</p>
           <div>
             <p class="text-xs font-bold uppercase tracking-widest text-slate-500 mb-1">Por qué pasó</p>
-            <ul class="list-disc ml-5 text-sm text-slate-700">
-              @for (reason of explainabilityResult()?.why || []; track reason) {
-                <li>{{ reason }}</li>
-              }
-            </ul>
+            <ul class="list-disc ml-5 text-sm text-slate-700">@for (reason of explainabilityResult()?.why || []; track reason) {<li>{{ reason }}</li>}</ul>
           </div>
           <div>
             <p class="text-xs font-bold uppercase tracking-widest text-slate-500 mb-1">Qué puedes hacer ahora</p>
-            <ul class="list-disc ml-5 text-sm text-slate-700">
-              @for (action of explainabilityResult()?.nextActions || []; track action) {
-                <li>{{ action }}</li>
-              }
-            </ul>
+            <ul class="list-disc ml-5 text-sm text-slate-700">@for (action of explainabilityResult()?.nextActions || []; track action) {<li>{{ action }}</li>}</ul>
           </div>
         </div>
       }
     </div>
+    }
 
     <!-- Device Viewport Container -->
     <div class="flex-1 flex w-full" [class.items-center]="!isFullscreen() && !isCompactViewport()" [class.justify-center]="!isFullscreen() && !isCompactViewport()" [class.overflow-hidden]="!isFullscreen() && !isCompactViewport()" [class.overflow-y-auto]="isFullscreen() || isCompactViewport()" [class.p-4]="!isFullscreen()" [class.md:p-8]="!isFullscreen()">
@@ -162,7 +166,7 @@
 
                     @switch (field.type) {
                       @case ('shortText') {
-                        <input type="text" [id]="field.id" [formControlName]="field.id" class="w-full px-5 py-4 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all bg-slate-50/30" [placeholder]="getLocalized(field.placeholder) || ''">
+                        <input type="text" [id]="field.id" [formControlName]="field.id" class="w-full px-5 py-4 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all bg-slate-50/30" [placeholder]="getLocalized(field.placeholder) || ''" [attr.aria-label]="getLocalized(field.label)">
                       }
                       @case ('text') {
                         <div class="text-slate-700 py-2 text-base leading-relaxed">
@@ -170,22 +174,22 @@
                         </div>
                       }
                       @case ('number') {
-                        <input type="number" [id]="field.id" [formControlName]="field.id" class="w-full px-5 py-4 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all bg-slate-50/30" [placeholder]="getLocalized(field.placeholder) || ''">
+                        <input type="number" [id]="field.id" [formControlName]="field.id" class="w-full px-5 py-4 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all bg-slate-50/30" [placeholder]="getLocalized(field.placeholder) || ''" [attr.aria-label]="getLocalized(field.label)">
                       }
                       @case ('email') {
-                        <input type="email" [id]="field.id" [formControlName]="field.id" class="w-full px-5 py-4 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all bg-slate-50/30" [placeholder]="getLocalized(field.placeholder) || 'example@email.com'">
+                        <input type="email" [id]="field.id" [formControlName]="field.id" class="w-full px-5 py-4 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all bg-slate-50/30" [placeholder]="getLocalized(field.placeholder) || 'example@email.com'" [attr.aria-label]="getLocalized(field.label)">
                       }
                       @case ('password') {
                         <input type="password" [id]="field.id" [formControlName]="field.id" class="w-full px-5 py-4 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all bg-slate-50/30" placeholder="••••••••">
                       }
                       @case ('longText') {
-                        <textarea [id]="field.id" [formControlName]="field.id" rows="4" class="w-full px-5 py-4 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all bg-slate-50/30 resize-none h-[calc(100%-32px)]" [placeholder]="getLocalized(field.placeholder) || ''"></textarea>
+                        <textarea [id]="field.id" [formControlName]="field.id" rows="4" class="w-full px-5 py-4 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all bg-slate-50/30 resize-none h-[calc(100%-32px)]" [placeholder]="getLocalized(field.placeholder) || ''" [attr.aria-label]="getLocalized(field.label)"></textarea>
                       }
                       @case ('textarea') {
-                        <textarea [id]="field.id" [formControlName]="field.id" rows="4" class="w-full px-5 py-4 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all bg-slate-50/30 resize-none h-[calc(100%-32px)]" [placeholder]="getLocalized(field.placeholder) || ''"></textarea>
+                        <textarea [id]="field.id" [formControlName]="field.id" rows="4" class="w-full px-5 py-4 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all bg-slate-50/30 resize-none h-[calc(100%-32px)]" [placeholder]="getLocalized(field.placeholder) || ''" [attr.aria-label]="getLocalized(field.label)"></textarea>
                       }
                       @case ('dropdown') {
-                        <select [id]="field.id" [formControlName]="field.id" class="w-full px-5 py-4 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all bg-slate-50/30 appearance-none">
+                        <select [id]="field.id" [formControlName]="field.id" class="w-full px-5 py-4 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all bg-slate-50/30 appearance-none" [attr.aria-label]="getLocalized(field.label)">
                           <option value="">{{ lang.currentLang() === 'es' ? 'Seleccione una opción' : 'Select an option' }}</option>
                           @for (option of getOptions(field.options); track option) {
                             <option [value]="option">{{ option }}</option>
@@ -204,7 +208,7 @@
                       }
                       @case ('checkbox') {
                         <div class="flex items-center h-full">
-                          <input type="checkbox" [id]="field.id" [formControlName]="field.id" class="w-6 h-6 text-indigo-600 rounded-lg border-slate-300 focus:ring-indigo-500">
+                          <input type="checkbox" [id]="field.id" [formControlName]="field.id" class="w-6 h-6 text-indigo-600 rounded-lg border-slate-300 focus:ring-indigo-500" [attr.aria-label]="getLocalized(field.label) || 'Agree to terms'">
                           <span class="ml-4 text-base text-slate-600">{{ getLocalized(field.placeholder) || (lang.currentLang() === 'es' ? 'Sí, acepto los términos' : 'Yes, I agree to the terms') }}</span>
                         </div>
                       }
@@ -226,7 +230,7 @@
                       }
                       @case ('carousel') {
                         <div class="h-full bg-slate-50 rounded-[2rem] flex items-center justify-between px-6 relative overflow-hidden group border border-slate-100 shadow-sm">
-                          <button type="button" (click)="$event.stopPropagation()" class="p-3 rounded-full bg-white text-slate-600 hover:bg-slate-50 transition-all shadow-lg z-10">
+                          <button type="button" (click)="$event.stopPropagation()" class="p-3 rounded-full bg-white text-slate-600 hover:bg-slate-50 transition-all shadow-lg z-10" aria-label="Previous slide">
                             <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
                           </button>
                           <div class="flex flex-col items-center gap-6 flex-1">
@@ -239,7 +243,7 @@
                                <div class="w-3 h-3 rounded-full bg-slate-300"></div>
                              </div>
                           </div>
-                          <button type="button" (click)="$event.stopPropagation()" class="p-3 rounded-full bg-white text-slate-600 hover:bg-slate-50 transition-all shadow-lg z-10">
+                          <button type="button" (click)="$event.stopPropagation()" class="p-3 rounded-full bg-white text-slate-600 hover:bg-slate-50 transition-all shadow-lg z-10" aria-label="Next slide">
                             <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" /></svg>
                           </button>
                         </div>
@@ -261,13 +265,13 @@
                         </div>
                       }
                       @case ('imageDropzone') {
+                        <input #fileInput type="file" class="hidden" aria-hidden="true" tabindex="-1" (change)="onFileSelected($event, field.id)">
                         <div class="h-full border-2 border-dashed border-slate-200 rounded-[2rem] flex flex-col items-center justify-center text-slate-400 bg-slate-50 hover:bg-slate-100 hover:border-indigo-300 transition-all cursor-pointer relative overflow-hidden group"
                              (click)="fileInput.click()"
                              (keydown.enter)="fileInput.click()"
                              tabindex="0"
                              role="button"
                              aria-label="Upload image">
-                          <input #fileInput type="file" class="hidden" (change)="onFileSelected($event, field.id)">
                           @if (formData[field.id + '_preview']) {
                             <img [src]="formData[field.id + '_preview']" class="absolute inset-0 w-full h-full object-cover" alt="Uploaded preview">
                             <div class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-sm">
@@ -285,7 +289,7 @@
                         <div class="h-full bg-white border border-slate-200 rounded-[2rem] relative overflow-hidden cursor-crosshair group shadow-inner">
                           <canvas [id]="'canvas-' + field.id" class="w-full h-full bg-slate-50/30"></canvas>
                           <div class="absolute top-6 right-6 flex gap-3 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <button type="button" class="p-3 bg-white border border-slate-200 rounded-2xl hover:bg-slate-50 shadow-xl text-slate-600">
+                            <button type="button" class="p-3 bg-white border border-slate-200 rounded-2xl hover:bg-slate-50 shadow-xl text-slate-600" aria-label="Clear drawing">
                               <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                             </button>
                           </div>
@@ -451,7 +455,7 @@
 
                       @switch (field.type) {
                         @case ('shortText') {
-                          <input type="text" [id]="field.id" [formControlName]="field.id" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all bg-slate-50/50" [placeholder]="field.placeholder || ''">
+                          <input type="text" [id]="field.id" [formControlName]="field.id" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all bg-slate-50/50" [placeholder]="field.placeholder || ''" [attr.aria-label]="getLocalized(field.label)">
                         }
                         @case ('text') {
                           <div class="text-slate-700 py-2 text-sm leading-relaxed">
@@ -459,22 +463,22 @@
                           </div>
                         }
                         @case ('number') {
-                          <input type="number" [id]="field.id" [formControlName]="field.id" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all bg-slate-50/50" [placeholder]="field.placeholder || ''">
+                          <input type="number" [id]="field.id" [formControlName]="field.id" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all bg-slate-50/50" [placeholder]="field.placeholder || ''" [attr.aria-label]="getLocalized(field.label)">
                         }
                         @case ('email') {
-                          <input type="email" [id]="field.id" [formControlName]="field.id" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all bg-slate-50/50" [placeholder]="field.placeholder || 'example@email.com'">
+                          <input type="email" [id]="field.id" [formControlName]="field.id" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all bg-slate-50/50" [placeholder]="field.placeholder || 'example@email.com'" [attr.aria-label]="getLocalized(field.label)">
                         }
                         @case ('password') {
                           <input type="password" [id]="field.id" [formControlName]="field.id" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all bg-slate-50/50" placeholder="••••••••">
                         }
                         @case ('longText') {
-                          <textarea [id]="field.id" [formControlName]="field.id" rows="4" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all bg-slate-50/50 resize-none h-[calc(100%-28px)]" [placeholder]="field.placeholder || ''"></textarea>
+                          <textarea [id]="field.id" [formControlName]="field.id" rows="4" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all bg-slate-50/50 resize-none h-[calc(100%-28px)]" [placeholder]="field.placeholder || ''" [attr.aria-label]="getLocalized(field.label)"></textarea>
                         }
                         @case ('textarea') {
-                          <textarea [id]="field.id" [formControlName]="field.id" rows="4" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all bg-slate-50/50 resize-none h-[calc(100%-28px)]" [placeholder]="field.placeholder || ''"></textarea>
+                          <textarea [id]="field.id" [formControlName]="field.id" rows="4" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all bg-slate-50/50 resize-none h-[calc(100%-28px)]" [placeholder]="field.placeholder || ''" [attr.aria-label]="getLocalized(field.label)"></textarea>
                         }
                         @case ('dropdown') {
-                          <select [id]="field.id" [formControlName]="field.id" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all bg-slate-50/50 appearance-none">
+                          <select [id]="field.id" [formControlName]="field.id" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all bg-slate-50/50 appearance-none" [attr.aria-label]="getLocalized(field.label)">
                             <option value="">{{ lang.currentLang() === 'es' ? 'Seleccione una opción' : 'Select an option' }}</option>
                             @for (option of getOptions(field.options); track option) {
                               <option [value]="option">{{ option }}</option>
@@ -493,7 +497,7 @@
                         }
                         @case ('checkbox') {
                           <div class="flex items-center h-full">
-                            <input type="checkbox" [id]="field.id" [formControlName]="field.id" class="w-5 h-5 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500">
+                            <input type="checkbox" [id]="field.id" [formControlName]="field.id" class="w-5 h-5 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500" [attr.aria-label]="getLocalized(field.label) || 'Agree to terms'">
                             <span class="ml-3 text-sm text-slate-600">Yes, I agree</span>
                           </div>
                         }
@@ -515,7 +519,7 @@
                         }
                         @case ('carousel') {
                           <div class="h-full bg-slate-50 rounded-3xl flex items-center justify-between px-4 relative overflow-hidden group border border-slate-100">
-                            <button type="button" (click)="$event.stopPropagation()" class="p-2 rounded-full bg-white text-slate-600 hover:bg-slate-50 transition-all shadow-md z-10">
+                            <button type="button" (click)="$event.stopPropagation()" class="p-2 rounded-full bg-white text-slate-600 hover:bg-slate-50 transition-all shadow-md z-10" aria-label="Previous slide">
                               <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
                             </button>
                             <div class="flex flex-col items-center gap-4 flex-1">
@@ -528,7 +532,7 @@
                                  <div class="w-2 h-2 rounded-full bg-slate-300"></div>
                                </div>
                             </div>
-                            <button type="button" (click)="$event.stopPropagation()" class="p-2 rounded-full bg-white text-slate-600 hover:bg-slate-50 transition-all shadow-md z-10">
+                            <button type="button" (click)="$event.stopPropagation()" class="p-2 rounded-full bg-white text-slate-600 hover:bg-slate-50 transition-all shadow-md z-10" aria-label="Next slide">
                               <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" /></svg>
                             </button>
                           </div>
@@ -550,13 +554,13 @@
                           </div>
                         }
                         @case ('imageDropzone') {
+                          <input #fileInput type="file" class="hidden" aria-hidden="true" tabindex="-1" (change)="onFileSelected($event, field.id)">
                           <div class="h-full border-2 border-dashed border-slate-200 rounded-3xl flex flex-col items-center justify-center text-slate-400 bg-slate-50 hover:bg-slate-100 hover:border-indigo-300 transition-all cursor-pointer relative overflow-hidden group"
                                (click)="fileInput.click()"
                                (keydown.enter)="fileInput.click()"
                                tabindex="0"
                                role="button"
                                aria-label="Upload image">
-                            <input #fileInput type="file" class="hidden" (change)="onFileSelected($event, field.id)">
                             @if (formData[field.id + '_preview']) {
                               <img [src]="formData[field.id + '_preview']" class="absolute inset-0 w-full h-full object-cover" alt="Uploaded preview">
                               <div class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-sm">
@@ -574,7 +578,7 @@
                           <div class="h-full bg-white border border-slate-200 rounded-3xl relative overflow-hidden cursor-crosshair group shadow-inner">
                             <canvas [id]="'canvas-' + field.id" class="w-full h-full bg-slate-50/30"></canvas>
                             <div class="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                              <button type="button" class="p-2 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 shadow-md text-slate-600">
+                              <button type="button" class="p-2 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 shadow-md text-slate-600" aria-label="Clear drawing">
                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                               </button>
                             </div>
