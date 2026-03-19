@@ -125,7 +125,7 @@
       @if (selectedDevice() === 'desktop' || isFullscreen() || isCompactViewport()) {
         <!-- Full Desktop Preview -->
         <div class="w-full bg-slate-50 overflow-y-auto" [class.h-full]="!isFullscreen() && !isCompactViewport()" [class.min-h-full]="isFullscreen() || isCompactViewport()" [class.shadow-sm]="!isFullscreen()" [class.border]="!isFullscreen()" [class.border-slate-200]="!isFullscreen()" [class.rounded-2xl]="!isFullscreen()">
-          <div class="max-w-4xl mx-auto min-h-full flex flex-col bg-white shadow-sm border-x border-slate-200">
+          <div class="min-h-full flex flex-col bg-white shadow-sm" [class.max-w-4xl]="!isFullscreen() && !isCompactViewport()" [class.mx-auto]="!isFullscreen() && !isCompactViewport()" [class.w-full]="isFullscreen() || isCompactViewport()" [class.border-x]="!isFullscreen() && !isCompactViewport()" [class.border-slate-200]="!isFullscreen() && !isCompactViewport()">
             <!-- Mock App Navbar -->
             <div class="bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between sticky top-0 z-10 shrink-0 shadow-sm">
               <div class="flex items-center gap-3">
