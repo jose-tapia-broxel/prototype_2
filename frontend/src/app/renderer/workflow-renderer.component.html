@@ -121,10 +121,10 @@
     }
 
     <!-- Device Viewport Container -->
-    <div class="flex-1 flex items-center justify-center overflow-hidden w-full" [class.p-4]="!isFullscreen()" [class.md:p-8]="!isFullscreen()">
-      @if (selectedDevice() === 'desktop' || isFullscreen()) {
+    <div class="flex-1 flex w-full" [class.items-center]="!isFullscreen() && !isCompactViewport()" [class.justify-center]="!isFullscreen() && !isCompactViewport()" [class.overflow-hidden]="!isFullscreen() && !isCompactViewport()" [class.overflow-y-auto]="isFullscreen() || isCompactViewport()" [class.p-4]="!isFullscreen()" [class.md:p-8]="!isFullscreen()">
+      @if (selectedDevice() === 'desktop' || isFullscreen() || isCompactViewport()) {
         <!-- Full Desktop Preview -->
-        <div class="w-full h-full bg-slate-50 overflow-y-auto" [class.shadow-sm]="!isFullscreen()" [class.border]="!isFullscreen()" [class.border-slate-200]="!isFullscreen()" [class.rounded-2xl]="!isFullscreen()">
+        <div class="w-full bg-slate-50 overflow-y-auto" [class.h-full]="!isFullscreen() && !isCompactViewport()" [class.min-h-full]="isFullscreen() || isCompactViewport()" [class.shadow-sm]="!isFullscreen()" [class.border]="!isFullscreen()" [class.border-slate-200]="!isFullscreen()" [class.rounded-2xl]="!isFullscreen()">
           <div class="max-w-4xl mx-auto min-h-full flex flex-col bg-white shadow-sm border-x border-slate-200">
             <!-- Mock App Navbar -->
             <div class="bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between sticky top-0 z-10 shrink-0 shadow-sm">
@@ -139,7 +139,7 @@
             </div>
             
             <form [formGroup]="stepForm" (ngSubmit)="nextStep()" class="flex-1 flex flex-col">
-              <div class="flex-1 relative p-10 min-h-[500px]">
+              <div class="flex-1 relative p-4 md:p-10 min-h-[420px] md:min-h-[500px]">
                 @if (currentStep()?.htmlCode) {
                   <div class="custom-html-container" [innerHTML]="getSanitizedHtml(currentStep()!.htmlCode!)"></div>
                   <style [innerHTML]="getSanitizedCss(currentStep()!.cssCode || '')"></style>
