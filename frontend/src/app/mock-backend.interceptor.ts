@@ -6,36 +6,98 @@ import { WorkflowDefinition, FormSubmission } from './models/workflow.model';
 let workflows: WorkflowDefinition[] = [
   {
     id: '1',
-    name: 'Employee Onboarding',
-    description: 'Collect initial information for new hires.',
-    totalSteps: 2,
-    successPath: 'User completes all steps and is shown a success message.',
-    errorHandlingPath: 'If any step fails, the user is shown an error message.',
+    name: { en: 'Broxel Basic Enrollment', es: 'Enrolamiento Básico Broxel' },
+    description: { en: 'Start-to-finish enrollment inspired by Broxel’s basic registration flow.', es: 'Enrolamiento de inicio a fin inspirado en el flujo básico de registro de Broxel.' },
+    totalSteps: 6,
+    successPath: 'User completes email, identity, address, biometrics, legal terms, and receives confirmation.',
+    errorHandlingPath: 'If required data is missing, keep applicant on current step and show validation feedback.',
     steps: [
       {
-        id: 'step1',
-        title: 'Personal Details',
+        id: 'step_email',
+        title: { en: 'Email Registration', es: 'Registro de Correo' },
+        navigation: { nextStep: 'step_identity' },
         layout: [
-          { id: 'firstName', type: 'shortText', label: 'First Name', required: true },
-          { id: 'lastName', type: 'shortText', label: 'Last Name', required: true },
-          { id: 'email', type: 'email', label: 'Personal Email', required: true }
+          { id: 'email', type: 'email', label: { en: 'Personal Email', es: 'Correo Electrónico Personal' }, required: true },
+          { id: 'confirmEmail', type: 'email', label: { en: 'Confirm Email', es: 'Confirmar Correo Electrónico' }, required: true },
+          { id: 'emailOwnership', type: 'checkbox', label: { en: 'I confirm this email belongs to me', es: 'Confirmo que este correo me pertenece' }, required: true }
         ],
         fields: [
-          { id: 'firstName', type: 'shortText', label: 'First Name', required: true },
-          { id: 'lastName', type: 'shortText', label: 'Last Name', required: true },
-          { id: 'email', type: 'email', label: 'Personal Email', required: true }
+          { id: 'email', type: 'email', label: { en: 'Personal Email', es: 'Correo Electrónico Personal' }, required: true },
+          { id: 'confirmEmail', type: 'email', label: { en: 'Confirm Email', es: 'Confirmar Correo Electrónico' }, required: true },
+          { id: 'emailOwnership', type: 'checkbox', label: { en: 'I confirm this email belongs to me', es: 'Confirmo que este correo me pertenece' }, required: true }
         ]
       },
       {
-        id: 'step2',
-        title: 'Equipment Request',
+        id: 'step_identity',
+        title: { en: 'Identity Data', es: 'Datos de Identidad' },
+        navigation: { nextStep: 'step_address' },
         layout: [
-          { id: 'laptop', type: 'dropdown', label: 'Laptop Choice', required: true, options: ['MacBook Pro', 'Dell XPS', 'Lenovo ThinkPad'] },
-          { id: 'accessories', type: 'checkbox', label: 'Need external monitor?', required: false }
+          { id: 'fullName', type: 'shortText', label: { en: 'Full Legal Name', es: 'Nombre Completo' }, required: true },
+          { id: 'curp', type: 'shortText', label: { en: 'CURP / Government ID', es: 'CURP / Identificación Oficial' }, required: true },
+          { id: 'birthDate', type: 'shortText', label: { en: 'Date of Birth (DD/MM/YYYY)', es: 'Fecha de Nacimiento (DD/MM/AAAA)' }, required: true }
         ],
         fields: [
-          { id: 'laptop', type: 'dropdown', label: 'Laptop Choice', required: true, options: ['MacBook Pro', 'Dell XPS', 'Lenovo ThinkPad'] },
-          { id: 'accessories', type: 'checkbox', label: 'Need external monitor?', required: false }
+          { id: 'fullName', type: 'shortText', label: { en: 'Full Legal Name', es: 'Nombre Completo' }, required: true },
+          { id: 'curp', type: 'shortText', label: { en: 'CURP / Government ID', es: 'CURP / Identificación Oficial' }, required: true },
+          { id: 'birthDate', type: 'shortText', label: { en: 'Date of Birth (DD/MM/YYYY)', es: 'Fecha de Nacimiento (DD/MM/AAAA)' }, required: true }
+        ]
+      },
+      {
+        id: 'step_address',
+        title: { en: 'Address', es: 'Domicilio' },
+        navigation: { nextStep: 'step_biometrics' },
+        layout: [
+          { id: 'zipCode', type: 'shortText', label: { en: 'ZIP Code', es: 'Código Postal' }, required: true },
+          { id: 'street', type: 'shortText', label: { en: 'Street and Number', es: 'Calle y Número' }, required: true },
+          { id: 'city', type: 'shortText', label: { en: 'City', es: 'Ciudad' }, required: true }
+        ],
+        fields: [
+          { id: 'zipCode', type: 'shortText', label: { en: 'ZIP Code', es: 'Código Postal' }, required: true },
+          { id: 'street', type: 'shortText', label: { en: 'Street and Number', es: 'Calle y Número' }, required: true },
+          { id: 'city', type: 'shortText', label: { en: 'City', es: 'Ciudad' }, required: true }
+        ]
+      },
+      {
+        id: 'step_biometrics',
+        title: { en: 'Biometrics', es: 'Biometría' },
+        navigation: { nextStep: 'step_legales' },
+        layout: [
+          { id: 'idFront', type: 'imageDropzone', label: { en: 'Upload ID Front', es: 'Subir Frente de Identificación' }, required: true },
+          { id: 'idBack', type: 'imageDropzone', label: { en: 'Upload ID Back', es: 'Subir Reverso de Identificación' }, required: true },
+          { id: 'selfie', type: 'imageDropzone', label: { en: 'Take or Upload Selfie', es: 'Tomar o Subir Selfie' }, required: true }
+        ],
+        fields: [
+          { id: 'idFront', type: 'imageDropzone', label: { en: 'Upload ID Front', es: 'Subir Frente de Identificación' }, required: true },
+          { id: 'idBack', type: 'imageDropzone', label: { en: 'Upload ID Back', es: 'Subir Reverso de Identificación' }, required: true },
+          { id: 'selfie', type: 'imageDropzone', label: { en: 'Take or Upload Selfie', es: 'Tomar o Subir Selfie' }, required: true }
+        ]
+      },
+      {
+        id: 'step_legales',
+        title: { en: 'Legal Terms', es: 'Legales' },
+        navigation: { nextStep: 'step_confirmation' },
+        layout: [
+          { id: 'privacyNotice', type: 'checkbox', label: { en: 'I accept the privacy notice', es: 'Acepto el aviso de privacidad' }, required: true },
+          { id: 'terms', type: 'checkbox', label: { en: 'I accept terms and conditions', es: 'Acepto términos y condiciones' }, required: true },
+          { id: 'dataConsent', type: 'checkbox', label: { en: 'I authorize identity validation', es: 'Autorizo validación de identidad' }, required: true }
+        ],
+        fields: [
+          { id: 'privacyNotice', type: 'checkbox', label: { en: 'I accept the privacy notice', es: 'Acepto el aviso de privacidad' }, required: true },
+          { id: 'terms', type: 'checkbox', label: { en: 'I accept terms and conditions', es: 'Acepto términos y condiciones' }, required: true },
+          { id: 'dataConsent', type: 'checkbox', label: { en: 'I authorize identity validation', es: 'Autorizo validación de identidad' }, required: true }
+        ]
+      },
+      {
+        id: 'step_confirmation',
+        title: { en: 'Confirmation', es: 'Confirmación' },
+        navigation: { nextStep: null },
+        layout: [
+          { id: 'enrollmentMessage', type: 'message', label: { en: 'Your enrollment request is complete and in validation.', es: 'Tu solicitud de enrolamiento fue completada y está en validación.' }, required: false },
+          { id: 'folio', type: 'shortText', label: { en: 'Reference Folio', es: 'Folio de Referencia' }, required: false, defaultValue: 'BROX-ENR-0001' }
+        ],
+        fields: [
+          { id: 'enrollmentMessage', type: 'message', label: { en: 'Your enrollment request is complete and in validation.', es: 'Tu solicitud de enrolamiento fue completada y está en validación.' }, required: false },
+          { id: 'folio', type: 'shortText', label: { en: 'Reference Folio', es: 'Folio de Referencia' }, required: false, defaultValue: 'BROX-ENR-0001' }
         ]
       }
     ]
@@ -159,9 +221,9 @@ export const mockBackendInterceptor: HttpInterceptorFn = (req: HttpRequest<unkno
       // GET /api/applications
       if (url.endsWith('/api/applications') && method === 'GET') {
         const mockApps = [
-          { id: 'app_1', organizationId: 'org_1', appKey: 'onboarding', name: 'Employee Onboarding', currentPublishedVersionId: 'ver_1' },
-          { id: 'app_2', organizationId: 'org_1', appKey: 'feedback', name: 'Customer Feedback', currentPublishedVersionId: null },
-          { id: 'app_3', organizationId: 'org_1', appKey: 'expense', name: 'Expense Approval', currentPublishedVersionId: 'ver_3' }
+          { id: 'app_1', organizationId: 'org_1', appKey: 'broxel_onboarding', name: 'Broxel Customer Onboarding', currentPublishedVersionId: 'ver_1' },
+          { id: 'app_2', organizationId: 'org_1', appKey: 'merchant_onboarding', name: 'Merchant Onboarding', currentPublishedVersionId: null },
+          { id: 'app_3', organizationId: 'org_1', appKey: 'wallet_onboarding', name: 'Wallet Activation Onboarding', currentPublishedVersionId: 'ver_3' }
         ];
         observer.next(new HttpResponse({ 
           status: 200, 
@@ -189,8 +251,8 @@ export const mockBackendInterceptor: HttpInterceptorFn = (req: HttpRequest<unkno
             contextJson: { userId: 'user_123', step: 2 },
             startedAt: new Date(Date.now() - 3600000).toISOString(),
             updatedAt: new Date().toISOString(),
-            workflowName: 'Employee Onboarding',
-            applicationName: 'HR System'
+            workflowName: 'Broxel Customer Onboarding',
+            applicationName: 'Broxel Onboarding Hub'
           },
           {
             id: 'inst_2',
@@ -204,8 +266,8 @@ export const mockBackendInterceptor: HttpInterceptorFn = (req: HttpRequest<unkno
             startedAt: new Date(Date.now() - 86400000).toISOString(),
             endedAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
-            workflowName: 'Customer Feedback',
-            applicationName: 'CRM'
+            workflowName: 'Merchant Onboarding',
+            applicationName: 'Partner Portal'
           },
           {
             id: 'inst_3',
@@ -218,8 +280,8 @@ export const mockBackendInterceptor: HttpInterceptorFn = (req: HttpRequest<unkno
             contextJson: {},
             startedAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
-            workflowName: 'Expense Approval',
-            applicationName: 'Finance'
+            workflowName: 'Wallet Activation Onboarding',
+            applicationName: 'Wallet Platform'
           }
         ];
         observer.next(new HttpResponse({ 
@@ -246,8 +308,8 @@ export const mockBackendInterceptor: HttpInterceptorFn = (req: HttpRequest<unkno
             contextJson: { userId: 'user_123', step: 2 },
             startedAt: new Date(Date.now() - 3600000).toISOString(),
             updatedAt: new Date().toISOString(),
-            workflowName: 'Employee Onboarding',
-            currentNodeLabel: 'Equipment Request'
+            workflowName: 'Broxel Customer Onboarding',
+            currentNodeLabel: 'Legal Consent Review'
           }
         }));
         observer.complete();

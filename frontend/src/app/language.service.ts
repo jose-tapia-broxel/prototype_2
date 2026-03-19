@@ -11,20 +11,20 @@ export class LanguageService {
   private readonly translations: Record<AppLocale, Record<string, string>> = {
     en: {
       'nav.dashboard': 'Dashboard',
-      'nav.newProcess': 'New Process',
+      'nav.newProcess': 'New Onboarding',
       'nav.wizard': 'Wizard',
       'nav.insights': 'Business Insights',
-      'footer.product': 'Broxel Process Builder.',
+      'footer.product': 'Broxel Onboarding Studio.',
       'footer.documentation': 'Documentation',
       'footer.support': 'Support',
       'footer.terms': 'Terms'
     },
     es: {
       'nav.dashboard': 'Panel',
-      'nav.newProcess': 'Nuevo Proceso',
+      'nav.newProcess': 'Nuevo Onboarding',
       'nav.wizard': 'Asistente',
       'nav.insights': 'Insights de Negocio',
-      'footer.product': 'Constructor de Procesos Broxel.',
+      'footer.product': 'Studio de Onboardings Broxel.',
       'footer.documentation': 'Documentación',
       'footer.support': 'Soporte',
       'footer.terms': 'Términos'
