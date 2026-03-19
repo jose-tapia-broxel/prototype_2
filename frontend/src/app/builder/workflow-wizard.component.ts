@@ -1,7 +1,6 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
 import { WorkflowService } from '../workflow.service';
 import { WorkflowDefinition, WorkflowStep } from '../models/workflow.model';
 
@@ -32,7 +31,6 @@ interface WizardState {
 })
 export class WorkflowWizardComponent {
   private workflowService = inject(WorkflowService);
-  private router = inject(Router);
 
   currentStep = signal(0);
   steps = [
@@ -110,7 +108,7 @@ export class WorkflowWizardComponent {
   createFromWizard() {
     const workflow = this.workflowPreview();
     this.workflowService.createWorkflow(workflow).subscribe(created => {
-      this.router.navigate(['/builder', created.id]);
+      window.open(`/run/${created.id}`, '_blank', 'noopener,noreferrer');
     });
   }
 
