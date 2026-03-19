@@ -1,5 +1,5 @@
 import { HttpInterceptorFn, HttpResponse, HttpRequest, HttpHandlerFn, HttpEvent, HttpErrorResponse } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, Observer } from 'rxjs';
 import { WorkflowDefinition, FormSubmission } from './models/workflow.model';
 
 // --- In-Memory Database ---
@@ -46,7 +46,7 @@ const submissions: FormSubmission[] = [];
 export const mockBackendInterceptor: HttpInterceptorFn = (req: HttpRequest<unknown>, next: HttpHandlerFn): Observable<HttpEvent<unknown>> => {
   const { url, method, body } = req;
 
-  return new Observable<HttpEvent<unknown>>(observer => {
+  return new Observable<HttpEvent<unknown>>((observer: Observer<HttpEvent<unknown>>) => {
     try {
       // GET /api/workflows
       if (url.endsWith('/api/workflows') && method === 'GET') {
@@ -139,8 +139,8 @@ export const mockBackendInterceptor: HttpInterceptorFn = (req: HttpRequest<unkno
             ...original, 
             id: Date.now().toString(),
             name: typeof original.name === 'string' ? `${original.name} (Copy)` : { 
-              en: `${(original.name as Record<string, string>).en || ''} (Copy)`,
-              es: `${(original.name as Record<string, string>).es || ''} (Copia)`
+              en: `${(original.name as Record<string, string>)['en'] || ''} (Copy)`,
+              es: `${(original.name as Record<string, string>)['es'] || ''} (Copia)`
             }
           };
           workflows.push(forked);
@@ -334,8 +334,8 @@ export const mockBackendInterceptor: HttpInterceptorFn = (req: HttpRequest<unkno
 
       // Pass through for any other requests
       next(req).subscribe({
-        next: event => observer.next(event),
-        error: err => observer.error(err),
+        next: (event: HttpEvent<unknown>) => observer.next(event),
+        error: (err: unknown) => observer.error(err),
         complete: () => observer.complete()
       });
     } catch {

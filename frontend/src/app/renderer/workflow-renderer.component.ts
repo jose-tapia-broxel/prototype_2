@@ -74,7 +74,7 @@ export class WorkflowRendererComponent implements OnInit {
     const step = this.currentStep();
     if (!step) return [];
     const fields = step.layout || step.fields || [];
-    return fields.map((field) => ({ id: field.id, label: this.getLocalized(field.label) || field.id }));
+    return fields.map((field: FormField) => ({ id: field.id, label: this.getLocalized(field.label) || field.id }));
   });
 
   selectedDevice = signal<string>('iphone-15');
@@ -146,7 +146,7 @@ export class WorkflowRendererComponent implements OnInit {
       if (step && step.id !== this.lastStepId) {
         // Run onDestroy for previous step if it exists
         if (this.lastStepId) {
-          const prevStep = this.workflow()?.steps.find(s => s.id === this.lastStepId);
+          const prevStep = this.workflow()?.steps.find((s: any) => s.id === this.lastStepId);
           if (prevStep?.onDestroyCode) {
             this.executeCode(prevStep.onDestroyCode);
           }
@@ -175,11 +175,11 @@ export class WorkflowRendererComponent implements OnInit {
   }
 
   isCustomField(type: string): boolean {
-    return !!this.workflow()?.customToolbox?.find(f => f.id === type);
+    return !!this.workflow()?.customToolbox?.find((f: any) => f.id === type);
   }
 
   getCustomFieldHtml(field: FormField): SafeHtml {
-    const customDef = this.workflow()?.customToolbox?.find(f => f.id === field.type);
+    const customDef = this.workflow()?.customToolbox?.find((f: any) => f.id === field.type);
     if (!customDef) return this.sanitizer.bypassSecurityTrustHtml('');
     
     // Simple template replacement
@@ -191,7 +191,7 @@ export class WorkflowRendererComponent implements OnInit {
   }
 
   getCustomFieldCss(type: string): SafeHtml {
-    const customDef = this.workflow()?.customToolbox?.find(f => f.id === type);
+    const customDef = this.workflow()?.customToolbox?.find((f: any) => f.id === type);
     return customDef ? this.sanitizer.bypassSecurityTrustHtml(customDef.css) : this.sanitizer.bypassSecurityTrustHtml('');
   }
 
@@ -240,7 +240,7 @@ export class WorkflowRendererComponent implements OnInit {
   getStepHeight(): number {
     const step = this.currentStep();
     if (!step || !step.fields || step.fields.length === 0) return 600;
-    const maxY = Math.max(...step.fields.map(f => (f.position?.y || 0) + (f.dimensions?.height || 90)));
+    const maxY = Math.max(...step.fields.map((f: FormField) => (f.position?.y || 0) + (f.dimensions?.height || 90)));
     return Math.max(600, maxY + 250); // Header + Footer + Padding
   }
 
@@ -256,7 +256,7 @@ export class WorkflowRendererComponent implements OnInit {
       step,
       { ...this.formData, ...this.stepForm?.value },
       this.telemetry.getRecentEvents(100)
-    ).dependencyChain.some((node) => node.nodeType === 'rule' && node.evaluation === 'true');
+    ).dependencyChain.some((node: any) => node.nodeType === 'rule' && node.evaluation === 'true');
   }
 
   openExplainability(targetId: string) {
@@ -283,7 +283,7 @@ export class WorkflowRendererComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.route.queryParamMap.subscribe(params => {
+    this.route.queryParamMap.subscribe((params: any) => {
       this.isFullscreen.set(params.get('fullscreen') === 'true');
       this.unsandboxMode.set(params.get('unsandbox') === 'true');
       if (this.isFullscreen()) {
@@ -301,7 +301,7 @@ export class WorkflowRendererComponent implements OnInit {
       }
     });
 
-    this.route.paramMap.subscribe(params => {
+    this.route.paramMap.subscribe((params: any) => {
       const id = params.get('id');
       if (id && id !== 'preview') {
         this.loadWorkflow(id);
@@ -317,7 +317,7 @@ export class WorkflowRendererComponent implements OnInit {
   }
 
   loadWorkflow(id: string) {
-    this.workflowService.getWorkflow(id).subscribe(data => {
+    this.workflowService.getWorkflow(id).subscribe((data: WorkflowDefinition) => {
       this.workflow.set(data);
       this.buildFormForCurrentStep();
       
@@ -334,7 +334,7 @@ export class WorkflowRendererComponent implements OnInit {
     const group: Record<string, FormControl> = {};
     const fieldsToProcess = step.layout || step.fields || [];
     
-    fieldsToProcess.forEach(field => {
+    fieldsToProcess.forEach((field: FormField) => {
       const isInteractive = ['message', 'container', 'ssoLogin', 'button', 'effect'].includes(field.type) || 
                            (field.type === 'text' && field.label === 'Static Text');
       
@@ -360,7 +360,7 @@ export class WorkflowRendererComponent implements OnInit {
     if (this.stepForm.valid) {
       this.saveCurrentStepData();
       if (!this.isLastStep()) {
-        this.currentStepIndex.update(i => i + 1);
+        this.currentStepIndex.update((i: number) => i + 1);
         this.buildFormForCurrentStep();
         
         // Track step transition
@@ -381,7 +381,7 @@ export class WorkflowRendererComponent implements OnInit {
   previousStep() {
     if (this.currentStepIndex() > 0) {
       this.saveCurrentStepData();
-      this.currentStepIndex.update(i => i - 1);
+      this.currentStepIndex.update((i: number) => i - 1);
       this.buildFormForCurrentStep();
     }
   }

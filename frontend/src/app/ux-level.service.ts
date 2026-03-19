@@ -20,7 +20,7 @@ export class UxLevelService {
   }
 
   canAccess(level: 'advanced' | 'developer') {
-    const rank = { simple: 0, advanced: 1, developer: 2 };
+    const rank: Record<UXLevel, number> = { simple: 0, advanced: 1, developer: 2 };
     return rank[this.level()] >= rank[level];
   }
 

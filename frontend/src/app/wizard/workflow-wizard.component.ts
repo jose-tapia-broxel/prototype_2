@@ -135,7 +135,7 @@ export class WorkflowWizardComponent {
     workflow.category = state === 'active' ? 'Auto-generated (active)' : 'Auto-generated (draft)';
     this.loading.set(true);
     this.workflowService.createWorkflow(workflow).subscribe({
-      next: (created) => {
+      next: (created: WorkflowDefinition) => {
         this.loading.set(false);
         this.createdId.set(created.id);
         void this.router.navigate(['/builder', created.id]);

@@ -43,7 +43,7 @@ export class ShortTextPluginComponent implements UIPluginComponent {
 
   constructor() {
     // Sync internal control with external value
-    this.control.valueChanges.subscribe(val => {
+    this.control.valueChanges.subscribe((val: unknown) => {
       this.valueChange.emit(val);
       this.statusChange.emit(this.control.valid ? 'VALID' : 'INVALID');
     });

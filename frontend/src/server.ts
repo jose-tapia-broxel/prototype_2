@@ -4,7 +4,7 @@ import {
   isMainModule,
   writeResponseToNodeResponse,
 } from '@angular/ssr/node';
-import express from 'express';
+import express, { Request, Response, NextFunction } from 'express';
 import {join} from 'node:path';
 
 const browserDistFolder = join(import.meta.dirname, '../browser');
@@ -131,12 +131,12 @@ let workflows: WorkflowDefinition[] = [
 const submissions: FormSubmission[] = [];
 
 // --- API Endpoints ---
-app.get('/api/workflows', (req, res) => {
+app.get('/api/workflows', (req: Request, res: Response) => {
   res.json(workflows);
 });
 
-app.get('/api/workflows/:id', (req, res) => {
-  const workflow = workflows.find(w => w.id === req.params.id);
+app.get('/api/workflows/:id', (req: Request, res: Response) => {
+  const workflow = workflows.find(w => w['id'] === req.params['id']);
   if (workflow) {
     res.json(workflow);
   } else {
@@ -144,7 +144,7 @@ app.get('/api/workflows/:id', (req, res) => {
   }
 });
 
-app.post('/api/workflows', (req, res) => {
+app.post('/api/workflows', (req: Request, res: Response) => {
   const newWorkflow: WorkflowDefinition = {
     ...req.body,
     id: Date.now().toString()
@@ -153,23 +153,23 @@ app.post('/api/workflows', (req, res) => {
   res.status(201).json(newWorkflow);
 });
 
-app.put('/api/workflows/:id', (req, res) => {
-  const index = workflows.findIndex(w => w.id === req.params.id);
+app.put('/api/workflows/:id', (req: Request, res: Response) => {
+  const index = workflows.findIndex(w => w['id'] === req.params['id']);
   if (index !== -1) {
-    workflows[index] = { ...req.body, id: req.params.id };
+    workflows[index] = { ...req.body, id: req.params['id'] };
     res.json(workflows[index]);
   } else {
     res.status(404).json({ error: 'Workflow not found' });
   }
 });
 
-app.delete('/api/workflows/:id', (req, res) => {
-  workflows = workflows.filter(w => w.id !== req.params.id);
+app.delete('/api/workflows/:id', (req: Request, res: Response) => {
+  workflows = workflows.filter(w => w['id'] !== req.params['id']);
   res.status(204).send();
 });
 
-app.post('/api/workflows/:id/fork', (req, res) => {
-  const workflow = workflows.find(w => w.id === req.params.id);
+app.post('/api/workflows/:id/fork', (req: Request, res: Response) => {
+  const workflow = workflows.find(w => w['id'] === req.params['id']);
   if (workflow) {
     const forkedWorkflow: WorkflowDefinition = {
       ...workflow,
@@ -183,10 +183,11 @@ app.post('/api/workflows/:id/fork', (req, res) => {
   }
 });
 
-app.post('/api/workflows/:id/submissions', (req, res) => {
+app.post('/api/workflows/:id/submissions', (req: Request, res: Response) => {
+  const workflowId = typeof req.params['id'] === 'string' ? req.params['id'] : req.params['id'][0];
   const submission: FormSubmission = {
     id: Date.now().toString(),
-    workflowId: req.params.id,
+    workflowId,
     data: req.body,
     submittedAt: new Date().toISOString()
   };
@@ -194,8 +195,8 @@ app.post('/api/workflows/:id/submissions', (req, res) => {
   res.status(201).json(submission);
 });
 
-app.get('/api/workflows/:id/submissions', (req, res) => {
-  const workflowSubmissions = submissions.filter(s => s.workflowId === req.params.id);
+app.get('/api/workflows/:id/submissions', (req: Request, res: Response) => {
+  const workflowSubmissions = submissions.filter(s => s['workflowId'] === req.params['id']);
   res.json(workflowSubmissions);
 });
 
@@ -225,10 +226,10 @@ app.use(
 /**
  * Handle all other requests by rendering the Angular application.
  */
-app.use((req, res, next) => {
+app.use((req: Request, res: Response, next: NextFunction) => {
   angularApp
     .handle(req)
-    .then((response) =>
+    .then((response: any) =>
       response ? writeResponseToNodeResponse(response, res) : next(),
     )
     .catch(next);
@@ -240,7 +241,7 @@ app.use((req, res, next) => {
  */
 if (isMainModule(import.meta.url) || process.env['pm_id']) {
   const port = process.env['PORT'] || 4000;
-  app.listen(port, (error) => {
+  app.listen(port, (error?: Error) => {
     if (error) {
       throw error;
     }

@@ -10,7 +10,6 @@ import {
 } from '../models/api.model';
 import { ApiClientService } from '../core/api/api-client.service';
 import { LanguageService } from '../language.service';
-import { SubmissionStatusComponent } from '../components/submission-status.component';
 
 /**
  * Workflow Instance Viewer Component
@@ -19,7 +18,7 @@ import { SubmissionStatusComponent } from '../components/submission-status.compo
 @Component({
   selector: 'app-instance-viewer',
   standalone: true,
-  imports: [CommonModule, RouterLink, SubmissionStatusComponent],
+  imports: [CommonModule, RouterLink],
   template: `
     <div class="flex-1 w-full max-w-7xl mx-auto p-6 py-8">
       <!-- Header -->
@@ -220,6 +219,9 @@ export class InstanceViewerComponent implements OnInit {
   private apiClient = inject(ApiClientService);
   lang = inject(LanguageService);
 
+  // Expose Object for template usage
+  Object = Object;
+
   loading = signal(true);
   instance = signal<WorkflowInstance | null>(null);
   currentNode = signal<WorkflowNode | null>(null);
@@ -366,10 +368,10 @@ export class InstanceViewerComponent implements OnInit {
     if (!id) return;
     
     this.apiClient.pauseWorkflowInstance(id).subscribe({
-      next: (updated) => this.instance.set(updated),
+      next: (updated: WorkflowInstance) => this.instance.set(updated),
       error: () => {
         // Optimistic update for demo
-        this.instance.update(inst => inst ? { ...inst, status: 'paused' as WorkflowInstanceStatus } : null);
+        this.instance.update((inst: WorkflowInstance | null) => inst ? { ...inst, status: 'paused' as WorkflowInstanceStatus } : null);
       }
     });
   }
@@ -379,9 +381,9 @@ export class InstanceViewerComponent implements OnInit {
     if (!id) return;
     
     this.apiClient.resumeWorkflowInstance(id).subscribe({
-      next: (updated) => this.instance.set(updated),
+      next: (updated: WorkflowInstance) => this.instance.set(updated),
       error: () => {
-        this.instance.update(inst => inst ? { ...inst, status: 'running' as WorkflowInstanceStatus } : null);
+        this.instance.update((inst: WorkflowInstance | null) => inst ? { ...inst, status: 'running' as WorkflowInstanceStatus } : null);
       }
     });
   }
