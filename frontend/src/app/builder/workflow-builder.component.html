@@ -300,15 +300,31 @@
             <!-- Connections SVG -->
             <svg class="absolute inset-0 overflow-visible pointer-events-none z-0">
               <defs>
-                <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
-                  <polygon points="0 0, 10 3.5, 0 7" fill="#4f46e5" />
+                <linearGradient id="connectionGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stop-color="#60a5fa" />
+                  <stop offset="45%" stop-color="#38bdf8" />
+                  <stop offset="100%" stop-color="#22d3ee" />
+                </linearGradient>
+                <filter id="connectionGlow" x="-50%" y="-50%" width="200%" height="200%">
+                  <feGaussianBlur stdDeviation="3.5" result="blurred" />
+                  <feMerge>
+                    <feMergeNode in="blurred" />
+                    <feMergeNode in="SourceGraphic" />
+                  </feMerge>
+                </filter>
+                <marker id="arrowhead" markerWidth="11" markerHeight="8" refX="9" refY="4" orient="auto">
+                  <polygon points="0 0, 11 4, 0 8" fill="#22d3ee" />
                 </marker>
               </defs>
               @for (conn of computedConnections(); track conn.id) {
-                <path [attr.d]="conn.path" fill="none" stroke="#4f46e5" stroke-width="3" marker-end="url(#arrowhead)" class="transition-all duration-75" />
+                <path [attr.d]="conn.path" class="connection-path-backdrop" />
+                <path [attr.d]="conn.path" class="connection-path-glow" />
+                <path [attr.d]="conn.path" marker-end="url(#arrowhead)" class="connection-path-main" />
+                <circle [attr.cx]="conn.startX" [attr.cy]="conn.startY" r="4" class="connection-node connection-node-source" />
+                <circle [attr.cx]="conn.endX" [attr.cy]="conn.endY" r="4.5" class="connection-node connection-node-target" />
               }
               @if (isConnecting()) {
-                <path [attr.d]="tempConnectionPath()" fill="none" stroke="#94a3b8" stroke-width="3" stroke-dasharray="5,5" />
+                <path [attr.d]="tempConnectionPath()" class="connection-path-draft" />
               }
             </svg>
 
@@ -328,21 +344,20 @@
 
                 <!-- Connector Handles -->
                 @if (uxLevel.canAccess('advanced')) {
-                <div class="absolute -right-4 top-1/2 w-8 h-8 bg-indigo-50 border-2 border-indigo-500 rounded-full cursor-crosshair flex items-center justify-center z-20 hover:scale-110 transition-transform shadow-sm"
+                <div class="absolute -right-4 top-1/2 w-8 h-8 connection-handle connection-handle--source cursor-crosshair flex items-center justify-center z-20 hover:scale-110 transition-transform"
                      (mousedown)="onConnectorMouseDown($event, step.id)"
                      title="Drag to connect">
-                  <div class="w-3 h-3 bg-indigo-500 rounded-full pointer-events-none"></div>
+                  <div class="w-2.5 h-2.5 bg-cyan-300 rounded-full pointer-events-none"></div>
                 </div>
                 }
 
                 @if (uxLevel.canAccess('advanced')) {
-                <div class="absolute -left-4 top-1/2 w-8 h-8 bg-white border-2 border-slate-300 hover:border-indigo-500 rounded-full flex items-center justify-center z-20 transition-all"
+                <div class="absolute -left-4 top-1/2 w-8 h-8 connection-handle connection-handle--target rounded-full flex items-center justify-center z-20 transition-all"
                      (mouseenter)="hoveredTargetStep.set(step.id)"
                      (mouseleave)="hoveredTargetStep.set(null)"
-                     [class.border-indigo-500]="isConnecting() && hoveredTargetStep() === step.id"
-                     [class.bg-indigo-50]="isConnecting() && hoveredTargetStep() === step.id"
+                     [class.connection-handle--active]="isConnecting() && hoveredTargetStep() === step.id"
                      [class.scale-125]="isConnecting() && hoveredTargetStep() === step.id">
-                  <div class="w-2 h-2 bg-slate-400 rounded-full pointer-events-none" [class.bg-indigo-500]="isConnecting() && hoveredTargetStep() === step.id"></div>
+                  <div class="w-2 h-2 bg-slate-400 rounded-full pointer-events-none" [class.bg-cyan-400]="isConnecting() && hoveredTargetStep() === step.id"></div>
                 </div>
                 }
 

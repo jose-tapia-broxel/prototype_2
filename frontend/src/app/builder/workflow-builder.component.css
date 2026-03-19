@@ -1,0 +1,66 @@
+.connection-path-backdrop {
+  fill: none;
+  stroke: rgba(15, 23, 42, 0.3);
+  stroke-width: 9;
+}
+
+.connection-path-glow {
+  fill: none;
+  stroke: rgba(34, 211, 238, 0.55);
+  stroke-width: 6;
+  filter: url(#connectionGlow);
+}
+
+.connection-path-main {
+  fill: none;
+  stroke: url(#connectionGradient);
+  stroke-width: 2.6;
+}
+
+.connection-path-draft {
+  fill: none;
+  stroke: rgba(56, 189, 248, 0.9);
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-dasharray: 7 6;
+  animation: dash-flow 0.8s linear infinite;
+}
+
+.connection-node {
+  stroke: #0f172a;
+  stroke-width: 1.5;
+}
+
+.connection-node-source {
+  fill: #67e8f9;
+}
+
+.connection-node-target {
+  fill: #22d3ee;
+}
+
+.connection-handle {
+  border-width: 2px;
+  box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.2), 0 5px 16px rgba(14, 116, 144, 0.28);
+}
+
+.connection-handle--source {
+  border-color: #0891b2;
+  background: radial-gradient(circle at 40% 40%, #67e8f9 0%, #0f172a 75%);
+}
+
+.connection-handle--target {
+  border-color: #94a3b8;
+  background: radial-gradient(circle at 30% 30%, #f8fafc 0%, #e2e8f0 80%);
+}
+
+.connection-handle--target.connection-handle--active {
+  border-color: #22d3ee;
+  background: radial-gradient(circle at 30% 30%, #cffafe 0%, #99f6e4 80%);
+}
+
+@keyframes dash-flow {
+  to {
+    stroke-dashoffset: -26;
+  }
+}
