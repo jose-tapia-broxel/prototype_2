@@ -9,6 +9,7 @@ import { WorkflowDefinition, FieldType, FormField, WorkflowNavigation, WorkflowS
 import { LanguageService } from '../language.service';
 import { UxLevelService } from './ux-level.service';
 import { NaturalLanguageWorkflowService, IntentAmbiguity } from '../nl-workflow.service';
+import { MonacoCodeEditorComponent } from '../shared/monaco-code-editor.component';
 
 interface DraggableField {
   type: FieldType;
@@ -20,7 +21,7 @@ interface DraggableField {
 @Component({
   selector: 'app-workflow-builder',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule, RouterLink, DragDropModule],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, RouterLink, DragDropModule, MonacoCodeEditorComponent],
   templateUrl: './workflow-builder.component.html',
   styleUrl: './workflow-builder.component.css',
   host: { class: 'flex-1 flex flex-col' }
@@ -679,6 +680,14 @@ export class WorkflowBuilderComponent implements OnInit {
     if (selectedTheme === 'monokai') return 'bg-[#272822] text-[#fd971f]';
     if (selectedTheme === 'intelligence') return 'bg-[#020617] text-[#5eead4]';
     return 'bg-slate-950 text-emerald-400';
+  }
+
+  getMonacoTheme(kind: 'html' | 'css' | 'js'): string {
+    const selectedTheme = kind === 'html' ? this.htmlTheme() : kind === 'css' ? this.cssTheme() : this.jsTheme();
+    if (selectedTheme === 'light') return 'vs';
+    if (selectedTheme === 'monokai') return 'app-monokai';
+    if (selectedTheme === 'intelligence') return 'app-intelligence';
+    return 'vs-dark';
   }
 
   openLivePreview() {

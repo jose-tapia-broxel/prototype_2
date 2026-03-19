@@ -193,7 +193,7 @@
         @if (editingCustomField() && uxLevel.canAccess('developer')) {
           <div class="fixed inset-0 z-[100] bg-slate-900 flex flex-col">
             <div class="p-4 border-b border-slate-800 flex items-center justify-between bg-slate-900">
-              <div class="flex items-center gap-6">
+              <div class="flex items-center gap-4 flex-wrap">
                 <div class="flex items-center gap-3">
                   <div class="w-2 h-2 rounded-full bg-indigo-500 animate-pulse"></div>
                   <input [(ngModel)]="editingCustomField()!.name" 
@@ -246,20 +246,23 @@
             </div>
             <div class="flex-1 relative">
               @if (activeCustomFieldTab() === 'html') {
-                <textarea [(ngModel)]="editingCustomField()!.html" 
-                          class="absolute inset-0 w-full h-full font-mono text-sm p-8 border-none focus:ring-0 outline-none resize-none leading-relaxed" [ngClass]="getEditorThemeClasses('html')"
-                          spellcheck="false"
-                          placeholder="<!-- Enter custom HTML for this component... -->"></textarea>
+                <app-monaco-code-editor [value]="editingCustomField()!.html || ''"
+                                        (valueChange)="editingCustomField()!.html = $event"
+                                        language="html"
+                                        [theme]="getMonacoTheme('html')"
+                                        class="absolute inset-0 block"></app-monaco-code-editor>
               } @else if (activeCustomFieldTab() === 'css') {
-                <textarea [(ngModel)]="editingCustomField()!.css" 
-                          class="absolute inset-0 w-full h-full font-mono text-sm p-8 border-none focus:ring-0 outline-none resize-none leading-relaxed" [ngClass]="getEditorThemeClasses('css')"
-                          spellcheck="false"
-                          placeholder="/* Enter custom CSS for this component... */"></textarea>
+                <app-monaco-code-editor [value]="editingCustomField()!.css || ''"
+                                        (valueChange)="editingCustomField()!.css = $event"
+                                        language="css"
+                                        [theme]="getMonacoTheme('css')"
+                                        class="absolute inset-0 block"></app-monaco-code-editor>
               } @else {
-                <textarea [(ngModel)]="editingCustomField()!.js" 
-                          class="absolute inset-0 w-full h-full font-mono text-sm p-8 border-none focus:ring-0 outline-none resize-none leading-relaxed" [ngClass]="getEditorThemeClasses('js')"
-                          spellcheck="false"
-                          placeholder="// Enter custom JavaScript for this component..."></textarea>
+                <app-monaco-code-editor [value]="editingCustomField()!.js || ''"
+                                        (valueChange)="editingCustomField()!.js = $event"
+                                        language="javascript"
+                                        [theme]="getMonacoTheme('js')"
+                                        class="absolute inset-0 block"></app-monaco-code-editor>
               }
             </div>
           </div>
@@ -372,12 +375,12 @@
                 @if (editingCodeForStep() === step.id && uxLevel.canAccess('developer')) {
                   <div class="absolute inset-0 z-50 bg-slate-900 flex flex-col">
                     <div class="p-4 border-b border-slate-800 flex items-center justify-between">
-                      <div class="flex items-center gap-6">
+                      <div class="flex items-center gap-4 flex-wrap">
                         <div class="flex items-center gap-2">
                           <div class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
                           <span class="text-xs font-bold text-slate-400 uppercase tracking-widest">Screen Logic</span>
                         </div>
-                        <div class="flex items-center gap-3">
+                        <div class="flex items-center gap-2 flex-wrap">
                           <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Themes</span>
                           <select [value]="htmlTheme()" (change)="htmlTheme.set($any($event.target).value)" class="bg-slate-800 text-slate-200 text-[10px] rounded px-2 py-1" aria-label="HTML theme">
                             <option value="night">HTML Night</option>
@@ -401,7 +404,7 @@
                             <option value="intelligence">JS/TS Intelligence</option>
                           </select>
                         </div>
-                <div class="flex bg-slate-800 p-1 rounded-lg">
+                <div class="flex bg-slate-800 p-1 rounded-lg flex-wrap">
                           <button (click)="activeCodeTab.set('html')" 
                                   [class.bg-slate-700]="activeCodeTab() === 'html'"
                                   [class.text-white]="activeCodeTab() === 'html'"
@@ -434,35 +437,41 @@
                     </div>
                     <div class="flex-1 relative">
                       @if (activeCodeTab() === 'html') {
-                        <textarea [(ngModel)]="step.htmlCode" 
-                                  class="absolute inset-0 w-full h-full font-mono text-sm p-6 border-none focus:ring-0 outline-none resize-none leading-relaxed" [ngClass]="getEditorThemeClasses('html')"
-                                  spellcheck="false"
-                                  placeholder="<!-- Enter custom HTML for this screen... -->"></textarea>
+                        <app-monaco-code-editor [value]="step.htmlCode || ''"
+                                                (valueChange)="step.htmlCode = $event"
+                                                language="html"
+                                                [theme]="getMonacoTheme('html')"
+                                                class="absolute inset-0 block"></app-monaco-code-editor>
                       } @else if (activeCodeTab() === 'css') {
-                        <textarea [(ngModel)]="step.cssCode" 
-                                  class="absolute inset-0 w-full h-full font-mono text-sm p-6 border-none focus:ring-0 outline-none resize-none leading-relaxed" [ngClass]="getEditorThemeClasses('css')"
-                                  spellcheck="false"
-                                  placeholder="/* Enter custom CSS for this screen... */"></textarea>
+                        <app-monaco-code-editor [value]="step.cssCode || ''"
+                                                (valueChange)="step.cssCode = $event"
+                                                language="css"
+                                                [theme]="getMonacoTheme('css')"
+                                                class="absolute inset-0 block"></app-monaco-code-editor>
                       } @else if (activeCodeTab() === 'loading') {
-                        <textarea [(ngModel)]="step.onLoadingCode" 
-                                  class="absolute inset-0 w-full h-full font-mono text-sm p-6 border-none focus:ring-0 outline-none resize-none leading-relaxed" [ngClass]="getEditorThemeClasses('js')"
-                                  spellcheck="false"
-                                  placeholder="// Code to run when document.readyState is 'loading'..."></textarea>
+                        <app-monaco-code-editor [value]="step.onLoadingCode || ''"
+                                                (valueChange)="step.onLoadingCode = $event"
+                                                language="typescript"
+                                                [theme]="getMonacoTheme('js')"
+                                                class="absolute inset-0 block"></app-monaco-code-editor>
                       } @else if (activeCodeTab() === 'interactive') {
-                        <textarea [(ngModel)]="step.onInteractiveCode" 
-                                  class="absolute inset-0 w-full h-full font-mono text-sm p-6 border-none focus:ring-0 outline-none resize-none leading-relaxed" [ngClass]="getEditorThemeClasses('js')"
-                                  spellcheck="false"
-                                  placeholder="// Code to run when document.readyState is 'interactive'..."></textarea>
+                        <app-monaco-code-editor [value]="step.onInteractiveCode || ''"
+                                                (valueChange)="step.onInteractiveCode = $event"
+                                                language="typescript"
+                                                [theme]="getMonacoTheme('js')"
+                                                class="absolute inset-0 block"></app-monaco-code-editor>
                       } @else if (activeCodeTab() === 'complete') {
-                        <textarea [(ngModel)]="step.onCompleteCode" 
-                                  class="absolute inset-0 w-full h-full font-mono text-sm p-6 border-none focus:ring-0 outline-none resize-none leading-relaxed" [ngClass]="getEditorThemeClasses('js')"
-                                  spellcheck="false"
-                                  placeholder="// Code to run when document.readyState is 'complete'..."></textarea>
+                        <app-monaco-code-editor [value]="step.onCompleteCode || ''"
+                                                (valueChange)="step.onCompleteCode = $event"
+                                                language="typescript"
+                                                [theme]="getMonacoTheme('js')"
+                                                class="absolute inset-0 block"></app-monaco-code-editor>
                       } @else if (activeCodeTab() === 'onDestroy') {
-                        <textarea [(ngModel)]="step.onDestroyCode" 
-                                  class="absolute inset-0 w-full h-full font-mono text-sm p-6 border-none focus:ring-0 outline-none resize-none leading-relaxed" [ngClass]="getEditorThemeClasses('js')"
-                                  spellcheck="false"
-                                  placeholder="// Code to run when leaving screen (onDestroy)..."></textarea>
+                        <app-monaco-code-editor [value]="step.onDestroyCode || ''"
+                                                (valueChange)="step.onDestroyCode = $event"
+                                                language="typescript"
+                                                [theme]="getMonacoTheme('js')"
+                                                class="absolute inset-0 block"></app-monaco-code-editor>
                       }
                     </div>
                     <div class="p-4 bg-slate-900 border-t border-slate-800 flex justify-between items-center">
