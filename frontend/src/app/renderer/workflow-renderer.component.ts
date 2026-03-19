@@ -99,6 +99,11 @@ export class WorkflowRendererComponent implements OnInit {
     return this.devices.find(d => d.id === this.selectedDevice()) || this.devices[0];
   });
 
+
+  isCompactViewport = computed(() => {
+    return this.viewportWidth() < 1024 || this.viewportHeight() < 720;
+  });
+
   previewScale = computed(() => {
     const device = this.currentDevice();
     if (device.id === 'desktop') return 1;
@@ -286,9 +291,6 @@ export class WorkflowRendererComponent implements OnInit {
     this.route.queryParamMap.subscribe((params: any) => {
       this.isFullscreen.set(params.get('fullscreen') === 'true');
       this.unsandboxMode.set(params.get('unsandbox') === 'true');
-      if (this.isFullscreen()) {
-        this.selectedDevice.set('desktop');
-      }
 
       const draftKey = params.get('draft');
       if (draftKey && isPlatformBrowser(this.platformId)) {
